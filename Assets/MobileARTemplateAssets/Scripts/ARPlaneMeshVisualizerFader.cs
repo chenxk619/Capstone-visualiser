@@ -51,9 +51,28 @@ namespace UnityEngine.XR.Templates.AR
         void Awake()
         {
             m_ShaderAlphaPropertyID = Shader.PropertyToID("_PlaneAlpha");
-            m_PlaneMaterial = m_PlaneRenderer.material;
+
+            // If not set in Inspector (common when AddComponent at runtime), find one.
+            if (m_PlaneRenderer == null)
+                m_PlaneRenderer = GetComponent<Renderer>();
+
+            // Many AR plane prefabs put the renderer on a child.
+            if (m_PlaneRenderer == null)
+                m_PlaneRenderer = GetComponentInChildren<Renderer>(true);
+
+            if (m_PlaneRenderer == null)
+            {
+                Debug.LogError(
+                    $"[{nameof(ARPlaneMeshVisualizerFader)}] No Renderer found on '{name}' or its children. Disabling fader.",
+                    this);
+                enabled = false;
+                return;
+            }
+
+            m_PlaneMaterial = m_PlaneRenderer.material; // creates instance (OK for per-plane fade)
             visualizeSurfaces = true;
         }
+
 
         /// <summary>
         /// See <see cref="MonoBehaviour"/>.
