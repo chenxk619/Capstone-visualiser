@@ -1,9 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Stylesheet.uss?fileID=7433441132597879392&amp;guid=7b3e06a7e80794ab4a9052e0d0999338&amp;type=3#Stylesheet"/>
-    <ui:VisualElement style="flex-grow: 1;">
-        <ui:VisualElement style="flex-grow: 1; position: absolute; height: 624px; width: 1079px; top: 545px;">
-            <ui:Image/>
-        </ui:VisualElement>
-        <ui:VisualElement style="flex-grow: 1; position: absolute; height: 933px; width: 1784px; top: 690px; background-color: rgb(212, 37, 37); left: 43px;"/>
+    <ui:VisualElement name="header" style="flex-grow: 1; position: absolute; height: 39px; width: 270px;">
+        <ui:TextField label="Text Field" placeholder-text="Time" name="time" style="height: 39px;"/>
     </ui:VisualElement>
+    <ui:VisualElement name="body" style="flex-grow: 1; position: absolute; height: 458px; width: 271px; top: 40px; left: 0;">
+        <ui:VisualElement name="crosshair" style="flex-grow: 1; position: absolute; height: 40px; width: 40px; top: 273px; left: 115px; color: rgb(248, 8, 8); -unity-text-outline-color: rgb(243, 24, 24);">
+            <ui:VisualElement name="crosshair_top" style="flex-grow: 1; position: absolute; height: 16px; width: 6px; left: 17px; background-color: rgb(196, 196, 196);"/>
+            <ui:VisualElement name="crosshair_bottom" style="flex-grow: 1; position: absolute; height: 16px; width: 6px; left: 17px; background-color: rgb(196, 196, 196); top: 24px;"/>
+            <ui:VisualElement name="crosshair_left" style="flex-grow: 1; position: absolute; height: 6px; width: 16px; left: 0; background-color: rgb(196, 196, 196); top: 17px;"/>
+            <ui:VisualElement name="crosshair_right" style="flex-grow: 1; position: absolute; height: 6px; width: 16px; left: 24px; background-color: rgb(196, 196, 196); top: 17px;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="end" style="flex-grow: 1; position: absolute; height: 84px; width: 269px; top: 502px; left: 1px;"/>
 </ui:UXML>
