@@ -1,0 +1,3 @@
+.crosshair {
+    background-color: rgb(233, 32, 32);
+}
