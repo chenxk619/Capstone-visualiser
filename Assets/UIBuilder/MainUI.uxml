@@ -1,9 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/Stylesheet.uss?fileID=7433441132597879392&amp;guid=7b3e06a7e80794ab4a9052e0d0999338&amp;type=3#Stylesheet"/>
     <ui:VisualElement name="header" style="flex-grow: 1; position: absolute; height: 39px; width: 270px; top: 0; left: 0; border-top-width: 4px; border-right-width: 4px; border-bottom-width: 4px; border-left-width: 4px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px;">
-        <ui:TextField label="" placeholder-text="Time" name="time" style="height: 39px; width: 89px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+        <ui:TextField label="" placeholder-text="Time" name="time" style="height: 33px; width: 78px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+        <ui:ProgressBar value="22" title="fuel" name="fuel" style="position: absolute; top: 2px; left: 103px; height: 26px; width: 151px;"/>
     </ui:VisualElement>
-    <ui:VisualElement name="body" style="flex-grow: 1; position: absolute; height: 458px; width: 271px; top: 40px; left: 0;">
+    <ui:VisualElement name="body" style="flex-grow: 1; position: absolute; height: 342px; width: 271px; top: 40px; left: 0;">
         <ui:VisualElement name="crosshair" style="flex-grow: 1; position: absolute; height: 40px; width: 40px; top: 240px; left: 115px; color: rgb(248, 8, 8); -unity-text-outline-color: rgb(243, 24, 24);">
             <ui:VisualElement name="crosshair_top" style="flex-grow: 1; position: absolute; height: 16px; width: 6px; left: 17px; background-color: rgb(196, 196, 196);"/>
             <ui:VisualElement name="crosshair_bottom" style="flex-grow: 1; position: absolute; height: 16px; width: 6px; left: 17px; background-color: rgb(196, 196, 196); top: 24px;"/>
@@ -11,5 +12,10 @@
             <ui:VisualElement name="crosshair_right" style="flex-grow: 1; position: absolute; height: 6px; width: 16px; left: 24px; background-color: rgb(196, 196, 196); top: 17px;"/>
         </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement name="end" style="flex-grow: 1; position: absolute; height: 84px; width: 269px; top: 502px; left: 1px;"/>
+    <ui:VisualElement name="end" style="flex-grow: 1; position: absolute; height: 200px; width: 269px; top: 385px; left: -1px;">
+        <ui:Image name="fire_extinguisher" style="position: absolute; height: 222px; width: 138px; top: -19px; left: 132px;">
+            <ui:Image data-source="project://database/Assets/XR/Resources/XRSimulationRuntimeSettings.asset?fileID=11400000&amp;guid=e9b2504bcc65542929413802f7fe8283&amp;type=2#XRSimulationRuntimeSettings" style="position: absolute; height: 204px; width: 138px; background-image: url(&quot;project://database/Assets/ChatGPT%20Image%20Feb%208,%202026,%2006_00_14%20PM.png?fileID=2800000&amp;guid=934a912611b354054b088882a89f8eef&amp;type=3#ChatGPT Image Feb 8, 2026, 06_00_14 PM&quot;); background-size: 150% 100%; top: 17px; left: 3px;"/>
+        </ui:Image>
+        <ui:TextField label="" placeholder-text="name" name="name" style="height: 51px; width: 110px; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; position: absolute; top: 116px; left: 10px;"/>
+    </ui:VisualElement>
 </ui:UXML>
