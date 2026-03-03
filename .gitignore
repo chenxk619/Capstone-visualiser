@@ -98,3 +98,5 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+Assets/Editor/Migration/com.ptc.vuforia.engine-11.4.4.tgz
+Packages/com.ptc.vuforia.engine-11.4.4.tgz
