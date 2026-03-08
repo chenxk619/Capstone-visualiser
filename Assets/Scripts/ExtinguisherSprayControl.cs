@@ -4,20 +4,21 @@ using UnityEngine.UIElements;
 public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 {
     [Header("Spray")]
-    public ParticleSystem spray;            // your spray particle system
-    public float sprayRange = 10f;          // try 20 on iPhone while testing
+    public ParticleSystem spray;
+    public float sprayRange = 10f;
 
-    [Header("Ray Source (AR Camera)")]
-    public Camera arCamera;                // drag ARCamera here
-    public Vector3 rayViewportPoint = new Vector3(0.5f, 0.5f, 0f); // center of screen
+    [Header("Ray Source (AR Camera only)")]
+    public Camera arCamera;
+    public Vector3 rayViewportPoint = new Vector3(0.5f, 0.5f, 0f);
 
     [Header("Fire Target")]
-    public LayerMask fireLayerMask;        // set to Fire layer only
-    public float extinguishTime = 3f;      // seconds of continuous hit
+    public LayerMask fireLayerMask;
+    public float extinguishTime = 3f;
+    public float extinguishDistance = 2.5f;
 
-    [Header("What to hide when extinguished")]
-    public GameObject fireRoot;            // drag your fire model root (the augmentation object)
-    public bool hideRenderersOnly = true;  // recommended for Vuforia objects
+    [Header("Current Fire Root")]
+    public GameObject fireRoot;
+    public bool hideRenderersOnly = true;
 
     [Header("Debug Overlay")]
     public bool showDebug = true;
@@ -32,32 +33,24 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Fuel")]
     public bool enableFuel = true;
-    public float maxFuel = 5f;                 // seconds worth (if fuelUsePerSecond=1)
-    public float fuelUsePerSecond = 1f;        // drain per second while spraying
+    public float maxFuel = 5f;
+    public float fuelUsePerSecond = 1f;
     public bool clearParticlesOnEmpty = true;
 
     [Header("Fuel UI Toolkit ProgressBar")]
-    public UIDocument uiDocument;              // drag your UIDocument here
-    public string fuelBarName = "FuelBar";     // ProgressBar Name in UI Builder
+    public UIDocument uiDocument;
+    public string fuelBarName = "FuelBar";
 
     [Header("Challenge Manager")]
     public FireChallengeManager challengeManager;
 
-    // Fuel state
     private float fuel;
-
-    // UI state
     private ProgressBar fuelBar;
 
     private float timer = 0f;
     private bool pressedNow = false;
     private bool hitNow = false;
     private bool extinguished = false;
-
-    //fire extinguishing range
-    public float range = 10f;
-    public float extinguishDistance = 0.2f;   // maximum distance allowed
-    public Camera cam;
 
     void Start()
     {
@@ -79,28 +72,19 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[Extinguisher] ProgressBar named '{fuelBarName}' not found. Fuel UI won't update.");
+                Debug.LogWarning($"[Extinguisher] ProgressBar named '{fuelBarName}' not found.");
             }
         }
     }
 
     void Update()
     {
-        // If win panel is showing, force spray OFF and ignore input
-        if (uiManager != null && uiManager.IsWinShowing())
-        {
-            ForceStopSpray();
-            KeepFireHidden();
-            return;
-        }
-
         if (uiManager != null && (uiManager.IsWinShowing() || uiManager.IsLoseShowing()))
         {
             ForceStopSpray();
             return;
         }
 
-        // Lock input briefly after win/restart (extra safety)
         if (inputLockTimer > 0f)
         {
             inputLockTimer -= Time.deltaTime;
@@ -109,10 +93,14 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             return;
         }
 
-        // Read input
+        if (extinguished)
+        {
+            ForceStopSpray();
+            return;
+        }
+
         pressedNow = IsPressed();
 
-        // Fuel gate: if empty, behave like locked state
         if (enableFuel && fuel <= 0f)
         {
             pressedNow = false;
@@ -121,7 +109,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             return;
         }
 
-        // Spray control
         if (spray)
         {
             if (pressedNow)
@@ -135,7 +122,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             }
         }
 
-        // Drain fuel while spraying
         if (enableFuel && pressedNow)
         {
             fuel -= fuelUsePerSecond * Time.deltaTime;
@@ -161,19 +147,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         UpdateFuelUI();
 
-        if (extinguished)
-        {
-            KeepFireHidden();
-            return;
-        }
-
-        // Extinguish only if spraying, ray hits fire, and hit is close enough
         hitNow = false;
 
         if (pressedNow && RayHitsFire(out RaycastHit hit))
         {
             if (showDebug)
-                Debug.Log($"Hit fire at distance: {hit.distance:F2} when range: {extinguishDistance} m");
+                Debug.Log($"Hit fire at distance: {hit.distance:F2} / limit: {extinguishDistance:F2}");
 
             if (hit.distance <= extinguishDistance)
             {
@@ -184,6 +163,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (hitNow)
         {
             timer += Time.deltaTime;
+
             if (timer >= extinguishTime)
                 Extinguish();
         }
@@ -196,45 +176,58 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     bool RayHitsFire(out RaycastHit hit)
     {
         hit = default;
+
         if (!arCamera) return false;
 
         Ray ray = arCamera.ViewportPointToRay(rayViewportPoint);
-        return Physics.Raycast(ray, out hit, sprayRange, fireLayerMask, QueryTriggerInteraction.Collide);
+
+        return Physics.Raycast(
+            ray,
+            out hit,
+            sprayRange,
+            fireLayerMask,
+            QueryTriggerInteraction.Collide
+        );
     }
 
     void Extinguish()
     {
         extinguished = true;
-
-
-        if (spray)
-            spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
-        inputLockTimer = inputLockAfterWin;
-
-        if (!fireRoot) return;
-
-        // advance the challenge
-        if (challengeManager)
-            challengeManager.OnFireExtinguished();
-        else if (uiManager)
-            uiManager.ShowWin();
-    }
-
-    // CALLED BY YOUR RESTART BUTTON VIA GameUIManager
-    public void ResetGame()
-    {
         timer = 0f;
-        extinguished = false;
         hitNow = false;
         pressedNow = false;
 
-        // REFILL FUEL + UPDATE BAR
-        fuel = maxFuel;
-        UpdateFuelUI();
-
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+        HideCurrentFire();
+
+        inputLockTimer = inputLockAfterWin;
+
+        if (challengeManager != null)
+            challengeManager.OnFireExtinguished();
+        else if (uiManager != null)
+            uiManager.ShowWin();
+    }
+
+    void HideCurrentFire()
+    {
+        if (!fireRoot) return;
+
+        if (hideRenderersOnly)
+        {
+            foreach (var r in fireRoot.GetComponentsInChildren<Renderer>(true))
+                r.enabled = false;
+        }
+        else
+        {
+            fireRoot.SetActive(false);
+        }
+    }
+
+    void ShowCurrentFire()
+    {
+        if (!fireRoot) return;
 
         if (hideRenderersOnly)
         {
@@ -243,8 +236,24 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         }
         else
         {
-            if (fireRoot.activeSelf) fireRoot.SetActive(true);
+            fireRoot.SetActive(true);
         }
+    }
+
+    public void ResetGame()
+    {
+        timer = 0f;
+        extinguished = false;
+        hitNow = false;
+        pressedNow = false;
+
+        fuel = maxFuel;
+        UpdateFuelUI();
+
+        if (spray)
+            spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+        ShowCurrentFire();
 
         inputLockTimer = inputLockAfterRestart;
     }
@@ -263,29 +272,10 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
-    void KeepFireHidden()
-    {
-        if (!fireRoot) return;
-
-        if (hideRenderersOnly)
-        {
-            foreach (var r in fireRoot.GetComponentsInChildren<Renderer>(true))
-                r.enabled = false;
-        }
-        else
-        {
-            if (fireRoot.activeSelf) fireRoot.SetActive(false);
-        }
-    }
-
     bool IsPressed()
     {
-        // iPhone touch
         if (Input.touchCount > 0) return true;
-
-        // Editor mouse testing
         if (Input.GetMouseButton(0)) return true;
-
         return false;
     }
 
@@ -305,9 +295,10 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-        // Switch target fireRoot
         if (newFireRoot != null)
             fireRoot = newFireRoot;
+
+        ShowCurrentFire();
 
         inputLockTimer = inputLockAfterRestart;
     }

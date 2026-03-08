@@ -25,7 +25,7 @@ public class FireChallengeManager : MonoBehaviour
     public UIDocument uiDocument;
 
     [Header("UI Toolkit")]
-    public string timerLabelName = "timerBar";
+    public string timerBarName = "timerBar";
 
     [Header("On-screen HUD (debug style)")]
     public bool showHUD = true;
@@ -46,7 +46,13 @@ public class FireChallengeManager : MonoBehaviour
         if (uiDocument != null)
         {
             var root = uiDocument.rootVisualElement;
-            timerBar = root.Q<ProgressBar>("timerBar");
+            timerBar = root.Q<ProgressBar>(timerBarName);
+
+            if (timerBar != null)
+            {
+                timerBar.lowValue = 0f;
+                timerBar.highValue = timeLimitSeconds;
+            }
         }
 
         HideAllFires();
@@ -74,7 +80,6 @@ public class FireChallengeManager : MonoBehaviour
             running = false;
 
             HideAllFires();
-
             UpdateTimerUI();
 
             if (uiManager) uiManager.ShowLose();
@@ -107,10 +112,12 @@ public class FireChallengeManager : MonoBehaviour
     {
         extinguishedCount = 0;
         timeLeft = timeLimitSeconds;
+        running = false;
+
         HideAllFires();
 
         if (extinguisher)
-            extinguisher.ResetForNextFire(null, refillFuel: true);
+            extinguisher.ResetForNextFire(null, true);
 
         UpdateTimerUI();
     }
@@ -119,17 +126,21 @@ public class FireChallengeManager : MonoBehaviour
     {
         if (fires == null || fires.Length == 0) return;
 
-        if (index < 0 || index >= fires.Length)
-            index = index % fires.Length;
+        // safety clamp
+        if (index < 0) index = 0;
+        if (index >= fires.Length) index = fires.Length - 1;
 
         HideAllFires();
 
-        var fire = fires[index];
-
-        if (extinguisher)
-            extinguisher.ResetForNextFire(fire, refillFuel: true);
+        GameObject fire = fires[index];
+        if (!fire) return;
 
         ShowFire(fire);
+
+        if (extinguisher)
+            extinguisher.ResetForNextFire(fire, true);
+
+        Debug.Log($"[Challenge] Activated fire index {index}: {fire.name}");
     }
 
     void HideAllFires()
@@ -172,8 +183,8 @@ public class FireChallengeManager : MonoBehaviour
         int mm = secs / 60;
         int ss = secs % 60;
 
-        timerBar.title = $"Timer: {mm:00}:{ss:00}";
-        timerBar.value = TimeLeft;
         timerBar.highValue = timeLimitSeconds;
+        timerBar.value = TimeLeft;
+        timerBar.title = $"Timer: {mm:00}:{ss:00}";
     }
 }
