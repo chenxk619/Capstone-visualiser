@@ -1,3 +1,10 @@
+/**
+*
+*  ExtinguisherFuel.cs
+*  A simple script to manage extinguisher fuel, UI, and spray effects.
+*
+**/
+
 using UnityEngine;
 using UnityEngine.UIElements;
 

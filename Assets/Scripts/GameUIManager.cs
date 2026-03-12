@@ -18,9 +18,8 @@ public class GameUIManager : MonoBehaviour
     public GameObject losePanel;
 
     [Header("Gameplay")]
-    public ExtinguisherExtinguish_CameraRay extinguisherScript;
+    public ExtinguisherModelSwitcher extinguisherSwitcher;
 
-    // NEW: reference to the challenge manager
     public FireChallengeManager challengeManager;
 
     void Start()
@@ -47,7 +46,6 @@ public class GameUIManager : MonoBehaviour
         return winPanel != null && winPanel.activeInHierarchy;
     }
 
-    // NEW
     public bool IsLoseShowing()
     {
         return losePanel != null && losePanel.activeInHierarchy;
@@ -69,10 +67,10 @@ public class GameUIManager : MonoBehaviour
             return;
         }
 
-        // Fallback: old single-fire reset
-        if (extinguisherScript)
-            extinguisherScript.ResetGame();
+        var extinguisher = extinguisherSwitcher ? extinguisherSwitcher.GetCurrentExtinguisher() : null;
+        if (extinguisher)
+            extinguisher.ResetGame();
         else
-            Debug.LogWarning("[GameUIManager] Assign challengeManager or extinguisherScript in Inspector.");
+            Debug.LogWarning("[GameUIManager] No active extinguisher found from switcher.");
     }
 }
