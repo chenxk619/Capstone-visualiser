@@ -9,7 +9,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Ray Source (AR Camera only)")]
     public Camera arCamera;
-    public Vector3 rayViewportPoint = new Vector3(0.5f, 0.5f, 0f);
+
+    [Header("Ray Origin (Extinguisher Nozzle)")]
+    public Transform rayOrigin;
+
+    [Header("Ray Debug UI")]
+    public string rayButtonName = "RayDebugButton";
 
     [Header("Fire Target")]
     public LayerMask fireLayerMask;
@@ -63,8 +68,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         fuel = maxFuel;
 
-        Debug.Log($"[{gameObject.name}] Extinguisher script started. Spray={(spray != null)}, Camera={(arCamera != null)}, FireRoot={(fireRoot != null)}");
-
         if (uiDocument != null)
         {
             var root = uiDocument.rootVisualElement;
@@ -96,6 +99,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     void Update()
     {
+
         if (uiManager != null && (uiManager.IsWinShowing() || uiManager.IsLoseShowing()))
         {
             ForceStopSpray();
@@ -204,7 +208,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             }
             else
             {
-                UpdateRangeUI("Out of Range");
+                UpdateRangeUI("Missed");
 
                 if (showDebug)
                     Debug.Log($"[{gameObject.name}] Ray did NOT hit fire");
@@ -223,17 +227,41 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             timer = 0f;
         }
     }
+    
+    // bool RayHitsFire(out RaycastHit hit)
+    // {
+    //     hit = default;
+
+    //     if (!rayOrigin) return false;
+
+    //     Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+
+    //     Debug.DrawRay(rayOrigin.position, rayOrigin.forward * sprayRange, Color.blue);
+
+    //     return Physics.Raycast(
+    //         ray,
+    //         out hit,
+    //         sprayRange,
+    //         fireLayerMask,
+    //         QueryTriggerInteraction.Collide
+    //     );
+    // }
 
     bool RayHitsFire(out RaycastHit hit)
     {
         hit = default;
 
-        if (!arCamera) return false;
+        if (!rayOrigin || !arCamera)
+            return false;
 
-        Ray ray = arCamera.ViewportPointToRay(rayViewportPoint);
+        Vector3 start = rayOrigin.position;
+
+        // Aim where the camera looks (best for AR)
+        Vector3 dir = arCamera.transform.forward;
 
         return Physics.Raycast(
-            ray,
+            start,
+            dir,
             out hit,
             sprayRange,
             fireLayerMask,
@@ -372,4 +400,13 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         inputLockTimer = inputLockAfterRestart;
     }
+
+    float DistanceFromRayToPoint(Vector3 rayOrigin, Vector3 rayDir, Vector3 point)
+    {
+        Vector3 toPoint = point - rayOrigin;
+        Vector3 projection = Vector3.Project(toPoint, rayDir);
+        Vector3 closestPoint = rayOrigin + projection;
+        return Vector3.Distance(point, closestPoint);
+    }
+
 }

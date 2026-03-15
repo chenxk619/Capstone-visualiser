@@ -307,6 +307,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "org.kumas.nuget-importer": {
+      "version": "https://github.com/kumaS-nu/NuGet-importer-for-Unity.git?path=NuGetImporterForUnity/Packages/NuGet%20Importer",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "50cef9770fff131e15fa98255192cd9081776fcb"
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,
