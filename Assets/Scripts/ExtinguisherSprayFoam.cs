@@ -25,6 +25,9 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     public GameObject fireRoot;
     public bool hideRenderersOnly = true;
 
+    [Header("Drag all extinguisher model roots here")]
+    public GameObject[] extinguisherModels;
+
     [Header("Debug Overlay")]
     public bool showDebug = true;
 
@@ -63,6 +66,8 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     void Start()
     {
+
+        
         if (!spray) spray = GetComponent<ParticleSystem>();
         if (!arCamera) arCamera = Camera.main;
 
@@ -99,6 +104,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     void Update()
     {
+        if (!gameObject.activeInHierarchy)
+        {
+            ForceStopSpray();
+            return;
+        }
 
         if (uiManager != null && (uiManager.IsWinShowing() || uiManager.IsLoseShowing()))
         {
@@ -227,25 +237,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             timer = 0f;
         }
     }
-    
-    // bool RayHitsFire(out RaycastHit hit)
-    // {
-    //     hit = default;
-
-    //     if (!rayOrigin) return false;
-
-    //     Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
-
-    //     Debug.DrawRay(rayOrigin.position, rayOrigin.forward * sprayRange, Color.blue);
-
-    //     return Physics.Raycast(
-    //         ray,
-    //         out hit,
-    //         sprayRange,
-    //         fireLayerMask,
-    //         QueryTriggerInteraction.Collide
-    //     );
-    // }
 
     bool RayHitsFire(out RaycastHit hit)
     {
