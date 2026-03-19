@@ -3,6 +3,12 @@ using UnityEngine.UIElements;
 
 public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 {
+    [Header("Safety Pin")]
+    public string pinButtonName = "PinButton";
+    private Button pinButton;
+
+    private bool isPinPulled = false;
+
     [Header("Spray")]
     public ParticleSystem spray;
     public float sprayRange = 10f;
@@ -67,7 +73,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     void Start()
     {
 
-        
         if (!spray) spray = GetComponent<ParticleSystem>();
         if (!arCamera) arCamera = Camera.main;
 
@@ -76,6 +81,17 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (uiDocument != null)
         {
             var root = uiDocument.rootVisualElement;
+
+            pinButton = root.Q<Button>(pinButtonName);
+
+            if (pinButton != null)
+            {
+                pinButton.clicked += TogglePin;
+            }
+            else
+            {
+                Debug.LogWarning($"[Extinguisher] Button '{pinButtonName}' not found.");
+            }
 
             fuelBar = root.Q<ProgressBar>(fuelBarName);
             rangeLabel = root.Q<Label>(rangeLabelName);
@@ -133,7 +149,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             return;
         }
 
-        pressedNow = IsPressed();
+        pressedNow = IsPressed() && isPinPulled;
 
         if (!pressedNow)
         {
@@ -398,6 +414,19 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         Vector3 projection = Vector3.Project(toPoint, rayDir);
         Vector3 closestPoint = rayOrigin + projection;
         return Vector3.Distance(point, closestPoint);
+    }
+
+    void TogglePin()
+    {
+        isPinPulled = !isPinPulled;
+
+        Debug.Log(isPinPulled ? "Pin Pulled" : "Pin Inserted");
+
+        // Optional: update button text
+        if (pinButton != null)
+        {
+            pinButton.text = isPinPulled ? "Pin: ON" : "Pin: OFF";
+        }
     }
 
 }
