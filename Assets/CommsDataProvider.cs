@@ -28,7 +28,7 @@ public class CommsDataProvider : MonoBehaviour
     private IMqttClient client;
 
     // Match your current smoke test
-    private const string Host = "172.20.10.3";
+    private const string Host = "172.20.10.2";
     private const int Port = 8883;
 
     private async void Awake()
@@ -66,6 +66,7 @@ public class CommsDataProvider : MonoBehaviour
 
             int value = bytes[6];
 
+            // USE THESE VALUES
             if (topic == "imu")
             {
                 LatestImu = value;

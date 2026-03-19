@@ -530,6 +530,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef8bd21336ba94417af31296dfcf2560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExtinguisherSprayControl
+  pinButtonName: PinButton
   spray: {fileID: 267902333}
   sprayRange: 20
   arCamera: {fileID: 648773780}
@@ -542,6 +543,7 @@ MonoBehaviour:
   extinguishDistance: 2
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
+  extinguisherModels: []
   showDebug: 1
   uiManager: {fileID: 216040271}
   rangeLabelName: Range
@@ -5497,6 +5499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef8bd21336ba94417af31296dfcf2560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExtinguisherSprayControl
+  pinButtonName: PinButton
   spray: {fileID: 306446905}
   sprayRange: 20
   arCamera: {fileID: 648773780}
@@ -5509,6 +5512,7 @@ MonoBehaviour:
   extinguishDistance: 2
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
+  extinguisherModels: []
   showDebug: 1
   uiManager: {fileID: 216040271}
   rangeLabelName: Range
@@ -10553,6 +10557,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 499742651}
+  - component: {fileID: 499742652}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -10575,12 +10580,24 @@ Transform:
   m_Children:
   - {fileID: 91948457}
   - {fileID: 216040270}
-  - {fileID: 740323956}
   - {fileID: 123780599}
   - {fileID: 1902051287}
   - {fileID: 1523472716}
+  - {fileID: 1575063521}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &499742652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499742650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0de78a752acc4648bb395d7006e8c59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CommsDataProvider
 --- !u!1 &514076802
 GameObject:
   m_ObjectHideFlags: 0
@@ -10786,11 +10803,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!198 &600944107 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 4842215139230738621, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
-  m_PrefabInstance: {fileID: 622627795}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &622627795
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11354,58 +11366,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 682316815}
   m_CullTransparentMesh: 1
---- !u!1 &740323955
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 740323956}
-  - component: {fileID: 740323957}
-  m_Layer: 0
-  m_Name: ExtinguisherController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &740323956
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 740323955}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.58831, y: 0, z: -1.5214599}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 499742651}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &740323957
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 740323955}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0fdd8a224d0aa4f01a2d9d61f975fb9d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExtinguisherFuel
-  maxFuel: 5
-  fuelUsePerSecond: 1
-  clearParticlesOnEmpty: 1
-  uiDocument: {fileID: 1729673543}
-  fuelBarName: FuelBar
-  sprayParticles: {fileID: 600944107}
-  sprayAudio: {fileID: 0}
-  useTouchAndMouse: 1
 --- !u!1 &748590641
 GameObject:
   m_ObjectHideFlags: 0
@@ -11452,6 +11412,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef8bd21336ba94417af31296dfcf2560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExtinguisherSprayControl
+  pinButtonName: PinButton
   spray: {fileID: 748590645}
   sprayRange: 20
   arCamera: {fileID: 648773780}
@@ -11464,6 +11425,7 @@ MonoBehaviour:
   extinguishDistance: 2
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
+  extinguisherModels: []
   showDebug: 1
   uiManager: {fileID: 216040271}
   rangeLabelName: Range
@@ -16330,6 +16292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef8bd21336ba94417af31296dfcf2560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExtinguisherSprayControl
+  pinButtonName: PinButton
   spray: {fileID: 994225159}
   sprayRange: 20
   arCamera: {fileID: 648773780}
@@ -16342,6 +16305,7 @@ MonoBehaviour:
   extinguishDistance: 4
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
+  extinguisherModels: []
   showDebug: 1
   uiManager: {fileID: 216040271}
   rangeLabelName: Range
@@ -22283,6 +22247,37 @@ MonoBehaviour:
   breachButtonName: BreachButton
   doorBreachController: {fileID: 1429461393}
   challengeManager: {fileID: 123780600}
+--- !u!1 &1575063520
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1575063521}
+  m_Layer: 0
+  m_Name: Comms
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1575063521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575063520}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.60139, y: 0.05287, z: -1.4428899}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 499742651}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1686142673
 GameObject:
   m_ObjectHideFlags: 0
