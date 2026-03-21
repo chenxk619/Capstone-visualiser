@@ -556,6 +556,7 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   fuelBarName: FuelBar
   challengeManager: {fileID: 123780600}
+  showCommsLogs: 1
 --- !u!199 &267902332
 ParticleSystemRenderer:
   serializedVersion: 7
@@ -5488,6 +5489,8 @@ MonoBehaviour:
   logIgnoredInputs: 1
   logTimeouts: 1
   logQueueing: 0
+  extinguisher: {fileID: 1173171848}
+  modelSwitcher: {fileID: 0}
 --- !u!4 &302774433
 Transform:
   m_ObjectHideFlags: 0
@@ -5575,6 +5578,7 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   fuelBarName: FuelBar
   challengeManager: {fileID: 123780600}
+  showCommsLogs: 1
 --- !u!199 &306446904
 ParticleSystemRenderer:
   serializedVersion: 7
@@ -10525,7 +10529,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -6689036041284674117, guid: 41d968b7dc099451cb948b5b08554aad, type: 3}
       propertyPath: m_Name
-      value: dryExtinguisher
+      value: powderExtinguisher
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 41d968b7dc099451cb948b5b08554aad, type: 3}
       propertyPath: m_LocalPosition.x
@@ -11489,6 +11493,7 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   fuelBarName: FuelBar
   challengeManager: {fileID: 123780600}
+  showCommsLogs: 1
 --- !u!199 &748590644
 ParticleSystemRenderer:
   serializedVersion: 7
@@ -16369,6 +16374,7 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   fuelBarName: FuelBar
   challengeManager: {fileID: 123780600}
+  showCommsLogs: 1
 --- !u!199 &994225158
 ParticleSystemRenderer:
   serializedVersion: 7
@@ -21581,6 +21587,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1115671022}
   m_CullTransparentMesh: 1
+--- !u!114 &1173171848 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8261222156457826081, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
+  m_PrefabInstance: {fileID: 622627795}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef8bd21336ba94417af31296dfcf2560, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ExtinguisherSprayControl
 --- !u!1 &1266802026
 GameObject:
   m_ObjectHideFlags: 0
@@ -22133,6 +22150,11 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   labelName: FireExtinguisherName
   currentIndex: 0
+  foamIndex: 0
+  waterIndex: 1
+  normalIndex: 2
+  carbonIndex: 3
+  chemicalIndex: 4
 --- !u!114 &1440585654
 MonoBehaviour:
   m_ObjectHideFlags: 0

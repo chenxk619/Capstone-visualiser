@@ -16,7 +16,8 @@ public class SyncedCommandManager : MonoBehaviour
     public bool logQueueing = true;
 
     [Header("Gameplay Targets")]
-    public ExtinguisherExtinguish_CameraRay extinguisher;
+    public ExtinguisherExtinguish_CameraRay extinguisher; // fallback
+    public ExtinguisherModelSwitcher modelSwitcher;
 
     private enum Source
     {
@@ -43,6 +44,13 @@ public class SyncedCommandManager : MonoBehaviour
         Water
     }
 
+    private enum SprayMode
+    {
+        None,
+        Normal,
+        Pressure
+    }
+
     private class SyncState
     {
         public bool active;
@@ -67,6 +75,8 @@ public class SyncedCommandManager : MonoBehaviour
     private readonly Queue<PendingInput> pendingInputs = new Queue<PendingInput>();
     private readonly Dictionary<Command, SyncState> syncStates = new Dictionary<Command, SyncState>();
 
+    private SprayMode currentSprayMode = SprayMode.Normal;
+
     private void Start()
     {
         comms = CommsDataProvider.Instance;
@@ -78,15 +88,23 @@ public class SyncedCommandManager : MonoBehaviour
             return;
         }
 
+        if (modelSwitcher == null)
+            modelSwitcher = FindObjectOfType<ExtinguisherModelSwitcher>();
+
+        if (modelSwitcher == null)
+            Debug.LogWarning("[SyncManager] No ExtinguisherModelSwitcher found in scene.");
+
         if (extinguisher == null)
             extinguisher = FindObjectOfType<ExtinguisherExtinguish_CameraRay>();
 
         if (extinguisher == null)
-            Debug.LogWarning("[SyncManager] No ExtinguisherExtinguish_CameraRay found in scene.");
+            Debug.LogWarning("[SyncManager] No fallback ExtinguisherExtinguish_CameraRay found in scene.");
 
         Debug.Log($"[SyncManager] Using comms instance id={comms.GetInstanceID()} on object={comms.gameObject.name}");
         Debug.Log($"[SyncManager] comms == CommsDataProvider.Instance ? {comms == CommsDataProvider.Instance}");
 
+        syncStates[Command.Normal] = new SyncState();
+        syncStates[Command.Pressure] = new SyncState();
         syncStates[Command.Breach] = new SyncState();
         syncStates[Command.Block] = new SyncState();
 
@@ -95,8 +113,23 @@ public class SyncedCommandManager : MonoBehaviour
         comms.OnProcessAudioUpdated += OnAudioUpdated;
 
         Log("Started. Listening for Flex / IMU / Audio updates.");
-        Log("Synced rules: Breach=IMU2+Audio1, Block=IMU5+Audio0.");
-        Log("Immediate IMU rules: PullPin=IMU1, Normal=IMU3, Pressure=IMU4.");
+        Log("Synced rules:");
+        Log("  Normal   = IMU3 + Audio7 -> sets NORMAL mode");
+        Log("  Pressure = IMU4 + Audio9 -> sets PRESSURE mode");
+        Log("  Breach   = IMU2 + Audio1");
+        Log("  Block    = IMU5 + Audio0");
+        Log("Immediate rules:");
+        Log("  PullPin  = IMU1");
+        Log("  Foam     -> switch to extinguisher index 0");
+        Log("  Water    -> switch to extinguisher index 1");
+        Log("  Powder   -> switch to extinguisher index 2");
+        Log("  Carbon   -> switch to extinguisher index 3");
+        Log("  Chemical -> switch to extinguisher index 4");
+        Log("  Next / Previous -> increment / decrement index");
+        Log("Flex rules:");
+        Log("  FLEX0 = release");
+        Log("  FLEX1 = normal flex");
+        Log("  FLEX2 = pressure flex");
     }
 
     private void OnDestroy()
@@ -107,6 +140,18 @@ public class SyncedCommandManager : MonoBehaviour
             comms.OnImuUpdated -= OnImuUpdated;
             comms.OnProcessAudioUpdated -= OnAudioUpdated;
         }
+    }
+
+    private ExtinguisherExtinguish_CameraRay GetActiveExtinguisher()
+    {
+        if (modelSwitcher != null)
+        {
+            ExtinguisherExtinguish_CameraRay current = modelSwitcher.GetCurrentExtinguisher();
+            if (current != null)
+                return current;
+        }
+
+        return extinguisher;
     }
 
     private void OnFlexUpdated(int value)
@@ -198,6 +243,12 @@ public class SyncedCommandManager : MonoBehaviour
 
     private void ProcessInput(Source source, int value)
     {
+        if (source == Source.Flex)
+        {
+            HandleFlexInput(value);
+            return;
+        }
+
         string rawDesc = DescribeRawInput(source, value);
         Log($"RAW INPUT -> {rawDesc}");
 
@@ -218,6 +269,61 @@ public class SyncedCommandManager : MonoBehaviour
             HandleSyncedCommand(source, command, value);
         else
             TriggerImmediateCommand(command, source, value);
+    }
+
+    private void HandleFlexInput(int value)
+    {
+        ExtinguisherExtinguish_CameraRay activeExtinguisher = GetActiveExtinguisher();
+
+        Debug.Log($"[SyncManager] FLEX INPUT -> FLEX={value} ({DescribeFlex(value)}), currentMode={currentSprayMode}");
+
+        if (activeExtinguisher == null)
+        {
+            Debug.LogWarning("[SyncManager] FLEX ignored because active extinguisher reference is missing.");
+            return;
+        }
+
+        if (value == 0)
+        {
+            activeExtinguisher.SetCommsSprayHeld(false);
+            Debug.Log("[SyncManager] FLEX RELEASE -> spray OFF");
+            return;
+        }
+
+        if (value == 1)
+        {
+            if (currentSprayMode == SprayMode.Normal)
+            {
+                activeExtinguisher.SetCommsSprayHeld(true);
+                Debug.Log("[SyncManager] FLEX NORMAL accepted in NORMAL mode -> spray ON");
+            }
+            else
+            {
+                activeExtinguisher.SetCommsSprayHeld(false);
+                Debug.Log($"[SyncManager] FLEX NORMAL ignored because current mode is {currentSprayMode}");
+            }
+
+            return;
+        }
+
+        if (value == 2)
+        {
+            if (currentSprayMode == SprayMode.Pressure)
+            {
+                activeExtinguisher.SetCommsSprayHeld(true);
+                Debug.Log("[SyncManager] FLEX PRESSURE accepted in PRESSURE mode -> spray ON");
+            }
+            else
+            {
+                activeExtinguisher.SetCommsSprayHeld(false);
+                Debug.Log($"[SyncManager] FLEX PRESSURE ignored because current mode is {currentSprayMode}");
+            }
+
+            return;
+        }
+
+        Debug.Log($"[SyncManager] FLEX value {value} is unknown -> spray OFF");
+        activeExtinguisher.SetCommsSprayHeld(false);
     }
 
     private Command MapInputToCommand(Source source, int value)
@@ -384,14 +490,22 @@ public class SyncedCommandManager : MonoBehaviour
 
     private void TriggerSyncedCommand(Command command)
     {
+        ExtinguisherExtinguish_CameraRay activeExtinguisher = GetActiveExtinguisher();
+
         switch (command)
         {
             case Command.Normal:
-                Debug.Log("[SyncManager] >>> ACTION FIRED: NORMAL (IMU 3 + Audio 7)");
+                currentSprayMode = SprayMode.Normal;
+                if (activeExtinguisher != null)
+                    activeExtinguisher.SetCommsSprayHeld(false);
+                Debug.Log("[SyncManager] >>> MODE SET: NORMAL (IMU 3 + Audio 7)");
                 break;
 
             case Command.Pressure:
-                Debug.Log("[SyncManager] >>> ACTION FIRED: PRESSURE (IMU 4 + Audio 9)");
+                currentSprayMode = SprayMode.Pressure;
+                if (activeExtinguisher != null)
+                    activeExtinguisher.SetCommsSprayHeld(false);
+                Debug.Log("[SyncManager] >>> MODE SET: PRESSURE (IMU 4 + Audio 9)");
                 break;
 
             case Command.Breach:
@@ -408,42 +522,60 @@ public class SyncedCommandManager : MonoBehaviour
     {
         Debug.Log($"[SyncManager] IMMEDIATE ACTION: {command} from {DescribeRawInput(source, rawValue)}");
 
+        ExtinguisherExtinguish_CameraRay activeExtinguisher = GetActiveExtinguisher();
+
         switch (command)
         {
             case Command.PullPin:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: PULL PIN");
+                if (activeExtinguisher != null)
+                    activeExtinguisher.PullPinFromComms();
                 break;
 
             case Command.Carbon:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: CARBON");
+                if (modelSwitcher != null)
+                    modelSwitcher.ShowCarbon();
                 break;
 
             case Command.Chemical:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: CHEMICAL");
-                break;
-
-            case Command.Dioxide:
-                Debug.Log("[SyncManager] >>> ACTION FIRED: DIOXIDE");
+                if (modelSwitcher != null)
+                    modelSwitcher.ShowChemical();
                 break;
 
             case Command.Foam:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: FOAM");
+                if (modelSwitcher != null)
+                    modelSwitcher.ShowFoam();
                 break;
 
             case Command.Next:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: NEXT");
+                if (modelSwitcher != null)
+                    modelSwitcher.NextModel();
                 break;
 
             case Command.Powder:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: POWDER");
+                if (modelSwitcher != null)
+                    modelSwitcher.ShowPowder();
                 break;
 
             case Command.Previous:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: PREVIOUS");
+                if (modelSwitcher != null)
+                    modelSwitcher.PreviousModel();
                 break;
 
             case Command.Water:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: WATER");
+                if (modelSwitcher != null)
+                    modelSwitcher.ShowWater();
+                break;
+
+            case Command.Dioxide:
+                Debug.Log("[SyncManager] >>> ACTION FIRED: DIOXIDE");
                 break;
         }
     }
@@ -467,9 +599,9 @@ public class SyncedCommandManager : MonoBehaviour
     {
         switch (value)
         {
-            case 0: return "unused";
-            case 1: return "unused";
-            case 2: return "unused";
+            case 0: return "released";
+            case 1: return "normal flex";
+            case 2: return "pressure flex";
             default: return "unknown";
         }
     }
