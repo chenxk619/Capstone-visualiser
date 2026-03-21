@@ -5360,6 +5360,62 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1 &296081455
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 296081456}
+  - component: {fileID: 296081457}
+  m_Layer: 0
+  m_Name: FireChallengeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &296081456
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296081455}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.60139, y: 0.05287, z: -1.4428899}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 499742651}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &296081457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 296081455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad942861d635424aa374bbbe7fb6080, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FireChallengeManager
+  firesToWin: 5
+  timeLimitSeconds: 30
+  fires: []
+  doorRoot: {fileID: 1429461391}
+  doorController: {fileID: 1429461393}
+  extinguisherSwitcher: {fileID: 1440585653}
+  uiManager: {fileID: 216040271}
+  uiDocument: {fileID: 1729673543}
+  timerBarName: timerBar
+  fireExtinguishedLabelName: FireExtinguished
+  showHUD: 1
+  hudFontSize: 20
 --- !u!1001 &300351804
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5484,13 +5540,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SyncedCommandManager
   comms: {fileID: 1266802029}
+  fireChallengeManager: {fileID: 296081457}
+  riotShieldController: {fileID: 837000815}
   syncWindowSeconds: 3
   verboseLogs: 1
   logIgnoredInputs: 1
   logTimeouts: 1
   logQueueing: 0
   extinguisher: {fileID: 1173171848}
-  modelSwitcher: {fileID: 0}
+  modelSwitcher: {fileID: 1440585653}
+  doorBreachUIController: {fileID: 1523472717}
 --- !u!4 &302774433
 Transform:
   m_ObjectHideFlags: 0
@@ -10597,6 +10656,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: -6689036041284674117, guid: 41d968b7dc099451cb948b5b08554aad, type: 3}
   m_PrefabInstance: {fileID: 341752598}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &353699592 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -6689036041284674117, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+  m_PrefabInstance: {fileID: 1517888412}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &381217630 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8128668236925612103, guid: ba9ee6f3f1c3743d19bfe4ca6ac02b77, type: 3}
@@ -10612,6 +10676,7 @@ GameObject:
   m_Component:
   - component: {fileID: 499742651}
   - component: {fileID: 499742652}
+  - component: {fileID: 499742653}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -10632,6 +10697,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 296081456}
   - {fileID: 91948457}
   - {fileID: 216040270}
   - {fileID: 123780599}
@@ -10639,6 +10705,7 @@ Transform:
   - {fileID: 1523472716}
   - {fileID: 1266802027}
   - {fileID: 302774433}
+  - {fileID: 837000814}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &499742652
@@ -10653,6 +10720,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0de78a752acc4648bb395d7006e8c59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CommsDataProvider
+--- !u!114 &499742653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499742650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ad942861d635424aa374bbbe7fb6080, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FireChallengeManager
+  firesToWin: 5
+  timeLimitSeconds: 30
+  fires: []
+  doorRoot: {fileID: 0}
+  doorController: {fileID: 0}
+  extinguisherSwitcher: {fileID: 0}
+  uiManager: {fileID: 0}
+  uiDocument: {fileID: 0}
+  timerBarName: timerBar
+  fireExtinguishedLabelName: FireExtinguished
+  showHUD: 1
+  hudFontSize: 20
 --- !u!1 &514076802
 GameObject:
   m_ObjectHideFlags: 0
@@ -11341,7 +11432,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1517888413}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &682316815
@@ -16297,6 +16389,52 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1 &837000813
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 837000814}
+  - component: {fileID: 837000815}
+  m_Layer: 0
+  m_Name: RiotShieldManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &837000814
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837000813}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.16224998, y: 0, z: -3.2765498}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 499742651}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &837000815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 837000813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b49b3cb338843ccbe9a9f186bc1197, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RiotShieldController
+  shieldObject: {fileID: 353699592}
+  visibleDuration: 3
 --- !u!4 &842141119 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5523450288160866863, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
@@ -22013,6 +22151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcafcaf12dede45f68003f58eb9785a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorBreachController
+  doorRoot: {fileID: 0}
   animator: {fileID: 1429461392}
   breachTriggerName: Breach
   allowOnlyOnce: 1
@@ -22152,7 +22291,7 @@ MonoBehaviour:
   currentIndex: 0
   foamIndex: 0
   waterIndex: 1
-  normalIndex: 2
+  powderIndex: 2
   carbonIndex: 3
   chemicalIndex: 4
 --- !u!114 &1440585654
@@ -22316,6 +22455,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1507156596}
   m_CullTransparentMesh: 1
+--- !u!1001 &1517888412
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 648773781}
+    m_Modifications:
+    - target: {fileID: -6689036041284674117, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_Name
+      value: riot_shield
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.017
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.228
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.005
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.019207522
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.019207483
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.70684594
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.7068458
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -176.887
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: -5645937942226959685, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+--- !u!4 &1517888413 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: 5a0aca3b643db40c193c0657aab5d824, type: 3}
+  m_PrefabInstance: {fileID: 1517888412}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1523472715
 GameObject:
   m_ObjectHideFlags: 0
@@ -22363,7 +22564,6 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   breachButtonName: BreachButton
   doorBreachController: {fileID: 1429461393}
-  challengeManager: {fileID: 123780600}
 --- !u!1 &1686142673
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,6 +5,10 @@ public class SyncedCommandManager : MonoBehaviour
 {
     [Header("References")]
     public CommsDataProvider comms;
+        
+    [Header("Gameplay References")]
+    public FireChallengeManager fireChallengeManager;
+    public RiotShieldController riotShieldController;
 
     [Header("Sync Settings")]
     public float syncWindowSeconds = 3f;
@@ -18,6 +22,9 @@ public class SyncedCommandManager : MonoBehaviour
     [Header("Gameplay Targets")]
     public ExtinguisherExtinguish_CameraRay extinguisher; // fallback
     public ExtinguisherModelSwitcher modelSwitcher;
+    public DoorBreachUIController doorBreachUIController;
+
+
 
     private enum Source
     {
@@ -87,6 +94,12 @@ public class SyncedCommandManager : MonoBehaviour
             enabled = false;
             return;
         }
+
+        if (doorBreachUIController == null)
+        doorBreachUIController = FindObjectOfType<DoorBreachUIController>();
+
+        if (doorBreachUIController == null)
+        Debug.LogWarning("[SyncManager] No DoorBreachUIController found in scene.");
 
         if (modelSwitcher == null)
             modelSwitcher = FindObjectOfType<ExtinguisherModelSwitcher>();
@@ -510,10 +523,19 @@ public class SyncedCommandManager : MonoBehaviour
 
             case Command.Breach:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: BREACH (IMU 2 + Audio 1)");
+                if (fireChallengeManager != null)
+                {
+                    fireChallengeManager.BreachDoorAndWin();
+                }
                 break;
 
             case Command.Block:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: BLOCK (IMU 5 + Audio 0)");
+
+                if (riotShieldController != null)
+                {
+                    riotShieldController.TriggerBlockShield();
+                }
                 break;
         }
     }

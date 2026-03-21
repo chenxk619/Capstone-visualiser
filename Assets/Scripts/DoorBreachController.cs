@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class DoorBreachController : MonoBehaviour
 {
+    [Header("Door Root (optional)")]
+    public GameObject doorRoot;
+
     [Header("Animator")]
     public Animator animator;
 
@@ -15,8 +18,14 @@ public class DoorBreachController : MonoBehaviour
 
     void Start()
     {
+        if (doorRoot == null)
+            doorRoot = gameObject;
+
         if (animator == null)
             animator = GetComponent<Animator>();
+
+        if (animator == null && doorRoot != null)
+            animator = doorRoot.GetComponent<Animator>();
 
         if (animator == null)
             Debug.LogWarning($"[DoorBreachController] No Animator found on {gameObject.name}");
@@ -24,6 +33,12 @@ public class DoorBreachController : MonoBehaviour
 
     public void BreachDoor()
     {
+        if (doorRoot != null && !doorRoot.activeSelf)
+        {
+            doorRoot.SetActive(true);
+            Debug.Log("[DoorBreachController] Door root activated before breach.");
+        }
+
         if (animator == null)
         {
             Debug.LogWarning("[DoorBreachController] Cannot breach: Animator is missing.");
@@ -36,6 +51,7 @@ public class DoorBreachController : MonoBehaviour
             return;
         }
 
+        animator.ResetTrigger(breachTriggerName);
         animator.SetTrigger(breachTriggerName);
         hasBreached = true;
 
@@ -45,6 +61,13 @@ public class DoorBreachController : MonoBehaviour
     public void ResetBreach()
     {
         hasBreached = false;
+
+        if (animator != null)
+            animator.ResetTrigger(breachTriggerName);
+
+        if (doorRoot != null)
+            doorRoot.SetActive(true);
+
         Debug.Log("[DoorBreachController] Breach reset.");
     }
 }
