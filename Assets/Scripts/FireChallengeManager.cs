@@ -17,7 +17,7 @@ public class FireChallengeManager : MonoBehaviour
 {
     [Header("Challenge Rules")]
     public int firesToWin = 5;
-    public float timeLimitSeconds = 30f;
+    public float timeLimitSeconds = 45f;
 
     [Header("Fires (drag 5+ fire roots here)")]
     public GameObject[] fires;

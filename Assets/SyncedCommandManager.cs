@@ -598,6 +598,8 @@ public class SyncedCommandManager : MonoBehaviour
 
             case Command.Dioxide:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: DIOXIDE");
+                if (modelSwitcher != null)
+                    modelSwitcher.ShowCarbon();
                 break;
         }
     }
