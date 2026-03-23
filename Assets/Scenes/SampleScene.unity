@@ -868,6 +868,7 @@ Transform:
   - {fileID: 1266802027}
   - {fileID: 302774433}
   - {fileID: 837000814}
+  - {fileID: 960177663}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &499742652
@@ -1130,6 +1131,10 @@ PrefabInstance:
       propertyPath: looping
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4842215139230738621, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 5523450288160866863, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.32000172
@@ -1286,6 +1291,10 @@ PrefabInstance:
       propertyPath: uiManager
       value: 
       objectReference: {fileID: 216040271}
+    - target: {fileID: 8261222156457826081, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
+      propertyPath: sprayRange
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 8261222156457826081, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
       propertyPath: uiDocument
       value: 
@@ -1666,6 +1675,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5523450288160866863, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
   m_PrefabInstance: {fileID: 622627795}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &960177662
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 960177663}
+  - component: {fileID: 960177664}
+  m_Layer: 0
+  m_Name: BlockController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &960177663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 960177662}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 66.451485, y: 0, z: 71.10925}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 499742651}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &960177664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 960177662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fac853d63ff249a899d441f22169d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  uiDocument: {fileID: 1729673543}
+  blockButtonName: BlockButton
+  riotShieldController: {fileID: 837000815}
 --- !u!1 &994225155
 GameObject:
   m_ObjectHideFlags: 0
@@ -1722,7 +1778,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   extinguishTime: 1
-  extinguishDistance: 4
+  normalExtinguishDistance: 2
+  pressureExtinguishDistance: 4
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
   extinguisherModels: []
@@ -7018,7 +7075,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   extinguishTime: 1
-  extinguishDistance: 4
+  normalExtinguishDistance: 2
+  pressureExtinguishDistance: 4
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
   extinguisherModels: []
@@ -12784,7 +12842,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   extinguishTime: 1
-  extinguishDistance: 4
+  normalExtinguishDistance: 2
+  pressureExtinguishDistance: 4
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
   extinguisherModels: []
@@ -18561,7 +18620,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   extinguishTime: 1
-  extinguishDistance: 4
+  normalExtinguishDistance: 2
+  pressureExtinguishDistance: 4
   fireRoot: {fileID: 381217630}
   hideRenderersOnly: 1
   extinguisherModels: []

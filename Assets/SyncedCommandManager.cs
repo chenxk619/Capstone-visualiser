@@ -509,6 +509,7 @@ public class SyncedCommandManager : MonoBehaviour
         {
             case Command.Normal:
                 currentSprayMode = SprayMode.Normal;
+                extinguisher.SetPressureMode(false);
                 if (activeExtinguisher != null)
                     activeExtinguisher.SetCommsSprayHeld(false);
                 Debug.Log("[SyncManager] >>> MODE SET: NORMAL (IMU 3 + Audio 7)");
@@ -516,6 +517,7 @@ public class SyncedCommandManager : MonoBehaviour
 
             case Command.Pressure:
                 currentSprayMode = SprayMode.Pressure;
+                extinguisher.SetPressureMode(true);
                 if (activeExtinguisher != null)
                     activeExtinguisher.SetCommsSprayHeld(false);
                 Debug.Log("[SyncManager] >>> MODE SET: PRESSURE (IMU 4 + Audio 9)");

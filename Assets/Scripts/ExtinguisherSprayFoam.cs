@@ -13,6 +13,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     public ParticleSystem spray;
     public float sprayRange = 10f;
 
+    [Header("Spray Lifetime")]
+    public float normalStartLifetime = 0.1f;
+    public float pressureStartLifetime = 0.3f;
+
+    private bool isPressureMode = false;
+
     [Header("Ray Source (AR Camera only)")]
     public Camera arCamera;
 
@@ -25,7 +31,10 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     [Header("Fire Target")]
     public LayerMask fireLayerMask;
     public float extinguishTime = 1f;
-    public float extinguishDistance = 2f;
+
+    [Header("Extinguish Distance")]
+    public float normalExtinguishDistance = 2f;
+    public float pressureExtinguishDistance = 4f;
 
     [Header("Current Fire Root")]
     public GameObject fireRoot;
@@ -78,6 +87,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     {
         if (!spray) spray = GetComponent<ParticleSystem>();
         if (!arCamera) arCamera = Camera.main;
+        ApplySprayModeSettings();
 
         fuel = maxFuel;
 
@@ -220,13 +230,15 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 if (showDebug)
                     Debug.Log($"[{gameObject.name}] Ray hit: {hit.collider.name}, distance: {hit.distance:F2}");
 
-                if (hit.distance <= extinguishDistance)
+                float currentExtinguishDistance = GetCurrentExtinguishDistance();
+
+                if (hit.distance <= currentExtinguishDistance)
                 {
                     hitNow = true;
                     UpdateRangeUI("In Range");
 
                     if (showDebug)
-                        Debug.Log($"[{gameObject.name}] Fire is within extinguish distance");
+                        Debug.Log($"[{gameObject.name}] Fire is within extinguish distance ({currentExtinguishDistance:F2})");
                 }
                 else
                 {
@@ -234,7 +246,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                     UpdateRangeUI("Out of Range");
 
                     if (showDebug)
-                        Debug.Log($"[{gameObject.name}] Hit fire but too far. Limit = {extinguishDistance:F2}");
+                        Debug.Log($"[{gameObject.name}] Hit fire but too far. Limit = {currentExtinguishDistance:F2}");
                 }
             }
             else
@@ -473,4 +485,39 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (showCommsLogs)
             Debug.Log("[Extinguisher] Pin inserted by comms.");
     }
+
+    public void SetPressureMode(bool enabled)
+    {
+        isPressureMode = enabled;
+        ApplySprayModeSettings();
+
+        if (showDebug || showCommsLogs)
+        {
+            Debug.Log($"[Extinguisher] Pressure mode set to {enabled}. Current distance = {GetCurrentExtinguishDistance():F2}");
+        }
+    }
+
+    public bool IsPressureMode()
+    {
+        return isPressureMode;
+    }
+
+    public float GetCurrentExtinguishDistance()
+    {
+        return isPressureMode ? pressureExtinguishDistance : normalExtinguishDistance;
+    }
+
+    public float GetCurrentStartLifetime()
+    {
+        return isPressureMode ? pressureStartLifetime : normalStartLifetime;
+    }
+
+    private void ApplySprayModeSettings()
+    {
+        if (spray == null) return;
+
+        var main = spray.main;
+        main.startLifetime = GetCurrentStartLifetime();
+    }
+
 }
