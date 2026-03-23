@@ -14,13 +14,22 @@ public class RiotShieldController : MonoBehaviour
     private void Awake()
     {
         if (shieldObject == null)
-            shieldObject = gameObject;
+        {
+            Debug.LogWarning("[RiotShieldController] shieldObject is not assigned.");
+            return;
+        }
 
-        HideShieldImmediate();
+        shieldObject.SetActive(false);
     }
 
     public void TriggerBlockShield()
     {
+        if (shieldObject == null)
+        {
+            Debug.LogWarning("[RiotShieldController] Cannot trigger shield: shieldObject is null.");
+            return;
+        }
+
         if (activeRoutine != null)
             StopCoroutine(activeRoutine);
 
@@ -43,16 +52,12 @@ public class RiotShieldController : MonoBehaviour
 
     private IEnumerator ShowShieldTemporarily()
     {
-        if (shieldObject != null)
-            shieldObject.SetActive(true);
-
+        shieldObject.SetActive(true);
         Debug.Log($"[RiotShieldController] Shield shown for {visibleDuration:F1}s.");
 
         yield return new WaitForSeconds(visibleDuration);
 
-        if (shieldObject != null)
-            shieldObject.SetActive(false);
-
+        shieldObject.SetActive(false);
         Debug.Log("[RiotShieldController] Shield hidden after timeout.");
         activeRoutine = null;
     }

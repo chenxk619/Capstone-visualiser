@@ -525,14 +525,18 @@ public class SyncedCommandManager : MonoBehaviour
                 Debug.Log("[SyncManager] >>> ACTION FIRED: BREACH (IMU 2 + Audio 1)");
                 if (fireChallengeManager != null)
                 {
-                    fireChallengeManager.BreachDoorAndWin();
+                    fireChallengeManager.ExecuteBreach();
                 }
                 break;
 
             case Command.Block:
                 Debug.Log("[SyncManager] >>> ACTION FIRED: BLOCK (IMU 5 + Audio 0)");
 
-                if (riotShieldController != null)
+                if (fireChallengeManager != null)
+                {
+                    fireChallengeManager.ExecuteBlock();
+                }
+                else if (riotShieldController != null)
                 {
                     riotShieldController.TriggerBlockShield();
                 }

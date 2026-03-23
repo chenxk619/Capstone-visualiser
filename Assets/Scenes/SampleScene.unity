@@ -243,7 +243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireChallengeManager
   firesToWin: 5
-  timeLimitSeconds: 30
+  timeLimitSeconds: 45
   fires:
   - {fileID: 381217630}
   - {fileID: 381217630}
@@ -252,6 +252,8 @@ MonoBehaviour:
   - {fileID: 381217630}
   doorRoot: {fileID: 1429461391}
   doorController: {fileID: 1429461393}
+  shieldRoot: {fileID: 353699592}
+  riotShieldController: {fileID: 837000815}
   extinguisherSwitcher: {fileID: 1440585653}
   uiManager: {fileID: 216040271}
   uiDocument: {fileID: 1729673543}
@@ -453,62 +455,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 230449997}
   m_CullTransparentMesh: 1
---- !u!1 &296081455
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 296081456}
-  - component: {fileID: 296081457}
-  m_Layer: 0
-  m_Name: FireChallengeManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &296081456
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 296081455}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.60139, y: 0.05287, z: -1.4428899}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 499742651}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &296081457
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 296081455}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ad942861d635424aa374bbbe7fb6080, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FireChallengeManager
-  firesToWin: 5
-  timeLimitSeconds: 45
-  fires: []
-  doorRoot: {fileID: 1429461391}
-  doorController: {fileID: 1429461393}
-  extinguisherSwitcher: {fileID: 1440585653}
-  uiManager: {fileID: 216040271}
-  uiDocument: {fileID: 1729673543}
-  timerBarName: timerBar
-  fireExtinguishedLabelName: FireExtinguished
-  showHUD: 1
-  hudFontSize: 20
 --- !u!1001 &300351804
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -633,7 +579,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SyncedCommandManager
   comms: {fileID: 1266802029}
-  fireChallengeManager: {fileID: 296081457}
+  fireChallengeManager: {fileID: 123780600}
   riotShieldController: {fileID: 837000815}
   syncWindowSeconds: 3
   verboseLogs: 1
@@ -914,7 +860,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 296081456}
   - {fileID: 91948457}
   - {fileID: 216040270}
   - {fileID: 123780599}
@@ -954,6 +899,8 @@ MonoBehaviour:
   fires: []
   doorRoot: {fileID: 0}
   doorController: {fileID: 0}
+  shieldRoot: {fileID: 0}
+  riotShieldController: {fileID: 0}
   extinguisherSwitcher: {fileID: 0}
   uiManager: {fileID: 0}
   uiDocument: {fileID: 0}

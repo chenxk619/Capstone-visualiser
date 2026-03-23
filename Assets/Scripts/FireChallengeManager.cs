@@ -4,13 +4,12 @@ using System.Collections;
 
 /**
  * FireChallenge
- * A simple manager for a fire-extinguishing challenge in Unity.
  * Rules:
  * - Player must extinguish a certain number of fires within a time limit.
  * - Fires are shown one at a time. When one is extinguished, the next appears.
  * - If time runs out, player loses.
- * - After all fires are extinguished, the door appears.
- * - Player manually breaches the door to complete the challenge and win.
+ * - After all fires are extinguished, the final action stage begins.
+ * - Player must execute BOTH Breach and Block to win.
  */
 
 public class FireChallengeManager : MonoBehaviour
@@ -25,6 +24,10 @@ public class FireChallengeManager : MonoBehaviour
     [Header("Door")]
     public GameObject doorRoot;
     public DoorBreachController doorController;
+
+    [Header("Shield")]
+    public GameObject shieldRoot;
+    public RiotShieldController riotShieldController;
 
     [Header("References")]
     public ExtinguisherModelSwitcher extinguisherSwitcher;
@@ -42,7 +45,12 @@ public class FireChallengeManager : MonoBehaviour
     private int extinguishedCount = 0;
     private float timeLeft;
     private bool running = false;
-    private bool waitingForDoorBreach = false;
+
+    // Final stage flags
+    private bool waitingForFinalActions = false;
+    private bool BreachDone = false;
+    private bool blockDone = false;
+    private bool winTriggered = false;
 
     private ProgressBar timerBar;
     private Label fireExtinguishedLabel;
@@ -85,6 +93,15 @@ public class FireChallengeManager : MonoBehaviour
 
     public void StartChallenge()
     {
+        if (doorRoot != null)
+        {
+            doorRoot.SetActive(false);
+        }
+
+        if (doorController != null)
+        {
+            doorController.hasBreached = false;
+        }
         ResetChallenge();
         running = true;
         ActivateFire(0);
@@ -102,13 +119,14 @@ public class FireChallengeManager : MonoBehaviour
         {
             timeLeft = 0f;
             running = false;
-            waitingForDoorBreach = false;
+            waitingForFinalActions = false;
 
             HideAllFires();
             HideDoor();
             UpdateTimerUI();
 
             if (uiManager) uiManager.ShowLose();
+            Debug.Log("[Challenge] Time up. Lose.");
             return;
         }
 
@@ -126,56 +144,103 @@ public class FireChallengeManager : MonoBehaviour
 
         if (extinguishedCount >= firesToWin)
         {
-            running = false;
-            waitingForDoorBreach = true;
-
+            // Enter final action stage
             HideAllFires();
-            UpdateTimerUI();
             ShowDoor();
 
-            Debug.Log("[Challenge] All fires extinguished. Waiting for manual door breach.");
-            if (doorController.hasBreached)
-            {
-                Debug.LogWarning("[Challenge] Door was already breached before waitingForDoorBreach was set. This may cause issues.");
-            }
+            waitingForFinalActions = true;
+            BreachDone = false;
+            blockDone = false;
+
+            Debug.Log("[Challenge] All fires extinguished. Waiting for BOTH Breach and Block.");
             return;
         }
 
         ActivateFire(extinguishedCount);
     }
 
-    public void BreachDoorAndWin()
+    /// <summary>
+    /// Call this when the player performs Breach.
+    /// Hook this to your Breach button / synced command / animation event.
+    /// </summary>
+    public void ExecuteBreach()
     {
-        if (!waitingForDoorBreach)
+        if (!waitingForFinalActions)
         {
-            Debug.LogWarning("[Challenge] Cannot breach yet. Not in door breach stage.");
+            Debug.LogWarning("[Challenge] Breach ignored. Not in final action stage.");
             return;
         }
 
-        if (doorController == null)
+        if (BreachDone)
         {
-            Debug.LogWarning("[Challenge] No doorController assigned.");
+            Debug.Log("[Challenge] Breach already completed.");
             return;
         }
 
-        doorController.BreachDoor();
-        waitingForDoorBreach = false;
+        BreachDone = true;
+        Debug.Log("[Challenge] Breach completed.");
 
-        StartCoroutine(BreachDoorSequence());
+        // Optional: trigger door animation here
+        if (doorController != null && !doorController.hasBreached)
+        {
+            doorController.BreachDoor();
+        }
+
+        CheckFinalWinCondition();
     }
 
-    IEnumerator BreachDoorSequence()
+    /// <summary>
+    /// Call this when the player performs BLOCK.
+    /// Hook this to your block button / synced command / animation event.
+    /// </summary>
+    public void ExecuteBlock()
     {
-        doorController.BreachDoor();
-        waitingForDoorBreach = false;
+        if (!waitingForFinalActions)
+        {
+            Debug.LogWarning("[Challenge] Block ignored. Not in final action stage.");
+            return;
+        }
 
-        // wait for animation
+        if (blockDone)
+        {
+            Debug.Log("[Challenge] Block already completed.");
+            return;
+        }
+
+        blockDone = true;
+        Debug.Log("[Challenge] Block completed.");
+
+        riotShieldController.TriggerBlockShield();
+
+        CheckFinalWinCondition();
+    }
+
+    void CheckFinalWinCondition()
+    {
+        Debug.Log($"[Challenge] Final action status => Breach: {BreachDone}, Block: {blockDone}");
+
+        if (!waitingForFinalActions || winTriggered)
+            return;
+
+        if (BreachDone && blockDone)
+        {
+            winTriggered = true;
+            waitingForFinalActions = false;
+            running = false;
+
+            StartCoroutine(WinSequence());
+        }
+    }
+
+    IEnumerator WinSequence()
+    {
+        // Wait a bit if you want the Breach/breach animation to finish
         yield return new WaitForSeconds(1.2f);
 
         if (uiManager)
             uiManager.ShowWin();
 
-        Debug.Log("[Challenge] Door breached. Win panel shown.");
+        Debug.Log("[Challenge] Both Breach and Block completed. Win panel shown.");
     }
 
     public GameObject GetCurrentFire()
@@ -206,7 +271,11 @@ public class FireChallengeManager : MonoBehaviour
         extinguishedCount = 0;
         timeLeft = timeLimitSeconds;
         running = false;
-        waitingForDoorBreach = false;
+
+        waitingForFinalActions = false;
+        BreachDone = false;
+        blockDone = false;
+        winTriggered = false;
 
         HideAllFires();
         HideDoor();
