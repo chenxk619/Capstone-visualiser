@@ -243,7 +243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireChallengeManager
   firesToWin: 5
-  timeLimitSeconds: 45
+  timeLimitSeconds: 6000
   fires:
   - {fileID: 381217630}
   - {fileID: 381217630}
@@ -1272,6 +1272,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 648773780}
     - target: {fileID: 8261222156457826081, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
+      propertyPath: maxFuel
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 8261222156457826081, guid: 225061a77b4c74ba09c13c579d8c9e51, type: 3}
       propertyPath: rayLine
       value: 
       objectReference: {fileID: 0}
@@ -1771,6 +1775,8 @@ MonoBehaviour:
   pinButtonName: PinButton
   spray: {fileID: 994225159}
   sprayRange: 20
+  normalStartLifetime: 0.1
+  pressureStartLifetime: 0.3
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 2050697848}
   rayButtonName: RayDebugButton
@@ -7068,6 +7074,8 @@ MonoBehaviour:
   pinButtonName: PinButton
   spray: {fileID: 1209408982}
   sprayRange: 20
+  normalStartLifetime: 0.1
+  pressureStartLifetime: 0.3
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1508365864}
   rayButtonName: RayDebugButton
@@ -12835,6 +12843,8 @@ MonoBehaviour:
   pinButtonName: PinButton
   spray: {fileID: 1597214286}
   sprayRange: 20
+  normalStartLifetime: 0.1
+  pressureStartLifetime: 0.3
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1479046123}
   rayButtonName: RayDebugButton
@@ -18613,6 +18623,8 @@ MonoBehaviour:
   pinButtonName: PinButton
   spray: {fileID: 2079982556}
   sprayRange: 20
+  normalStartLifetime: 0.1
+  pressureStartLifetime: 0.3
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1834393330}
   rayButtonName: RayDebugButton

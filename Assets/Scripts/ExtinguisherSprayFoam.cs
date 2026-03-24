@@ -60,7 +60,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Fuel")]
     public bool enableFuel = true;
-    public float maxFuel = 5f;
+    public float maxFuel = 60f;
     public float fuelUsePerSecond = 1f;
     public bool clearParticlesOnEmpty = true;
 
