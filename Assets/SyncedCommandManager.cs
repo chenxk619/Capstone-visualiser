@@ -24,8 +24,6 @@ public class SyncedCommandManager : MonoBehaviour
     public ExtinguisherModelSwitcher modelSwitcher;
     public DoorBreachUIController doorBreachUIController;
 
-
-
     private enum Source
     {
         Flex,
@@ -96,10 +94,10 @@ public class SyncedCommandManager : MonoBehaviour
         }
 
         if (doorBreachUIController == null)
-        doorBreachUIController = FindObjectOfType<DoorBreachUIController>();
+            doorBreachUIController = FindObjectOfType<DoorBreachUIController>();
 
         if (doorBreachUIController == null)
-        Debug.LogWarning("[SyncManager] No DoorBreachUIController found in scene.");
+            Debug.LogWarning("[SyncManager] No DoorBreachUIController found in scene.");
 
         if (modelSwitcher == null)
             modelSwitcher = FindObjectOfType<ExtinguisherModelSwitcher>();
@@ -141,8 +139,7 @@ public class SyncedCommandManager : MonoBehaviour
         Log("  Next / Previous -> increment / decrement index");
         Log("Flex rules:");
         Log("  FLEX0 = release");
-        Log("  FLEX1 = normal flex");
-        Log("  FLEX2 = pressure flex");
+        Log("  FLEX1 = fire (works in both NORMAL and PRESSURE modes)");
     }
 
     private void OnDestroy()
@@ -305,37 +302,21 @@ public class SyncedCommandManager : MonoBehaviour
 
         if (value == 1)
         {
-            if (currentSprayMode == SprayMode.Normal)
+            if (currentSprayMode == SprayMode.Normal || currentSprayMode == SprayMode.Pressure)
             {
                 activeExtinguisher.SetCommsSprayHeld(true);
-                Debug.Log("[SyncManager] FLEX NORMAL accepted in NORMAL mode -> spray ON");
+                Debug.Log($"[SyncManager] FLEX FIRE accepted in {currentSprayMode} mode -> spray ON");
             }
             else
             {
                 activeExtinguisher.SetCommsSprayHeld(false);
-                Debug.Log($"[SyncManager] FLEX NORMAL ignored because current mode is {currentSprayMode}");
+                Debug.Log("[SyncManager] FLEX FIRE ignored because no spray mode is selected.");
             }
 
             return;
         }
 
-        if (value == 2)
-        {
-            if (currentSprayMode == SprayMode.Pressure)
-            {
-                activeExtinguisher.SetCommsSprayHeld(true);
-                Debug.Log("[SyncManager] FLEX PRESSURE accepted in PRESSURE mode -> spray ON");
-            }
-            else
-            {
-                activeExtinguisher.SetCommsSprayHeld(false);
-                Debug.Log($"[SyncManager] FLEX PRESSURE ignored because current mode is {currentSprayMode}");
-            }
-
-            return;
-        }
-
-        Debug.Log($"[SyncManager] FLEX value {value} is unknown -> spray OFF");
+        Debug.Log($"[SyncManager] FLEX value {value} is unused/unknown -> spray OFF");
         activeExtinguisher.SetCommsSprayHeld(false);
     }
 
@@ -509,17 +490,21 @@ public class SyncedCommandManager : MonoBehaviour
         {
             case Command.Normal:
                 currentSprayMode = SprayMode.Normal;
-                extinguisher.SetPressureMode(false);
                 if (activeExtinguisher != null)
+                {
+                    activeExtinguisher.SetPressureMode(false);
                     activeExtinguisher.SetCommsSprayHeld(false);
+                }
                 Debug.Log("[SyncManager] >>> MODE SET: NORMAL (IMU 3 + Audio 7)");
                 break;
 
             case Command.Pressure:
                 currentSprayMode = SprayMode.Pressure;
-                extinguisher.SetPressureMode(true);
                 if (activeExtinguisher != null)
+                {
+                    activeExtinguisher.SetPressureMode(true);
                     activeExtinguisher.SetCommsSprayHeld(false);
+                }
                 Debug.Log("[SyncManager] >>> MODE SET: PRESSURE (IMU 4 + Audio 9)");
                 break;
 
@@ -630,9 +615,8 @@ public class SyncedCommandManager : MonoBehaviour
         switch (value)
         {
             case 0: return "released";
-            case 1: return "normal flex";
-            case 2: return "pressure flex";
-            default: return "unknown";
+            case 1: return "fire";
+            default: return "unused / unknown";
         }
     }
 
