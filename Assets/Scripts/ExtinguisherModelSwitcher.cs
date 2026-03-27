@@ -23,127 +23,109 @@ public class ExtinguisherModelSwitcher : MonoBehaviour
     public int carbonIndex = 3;
     public int chemicalIndex = 4;
 
-    private Label nameLabel;
+    private Label fireNameLabel;
 
     void Start()
     {
+        if (extinguisherModels == null || extinguisherModels.Length == 0)
+        {
+            Debug.LogWarning("[ExtinguisherModelSwitcher] No extinguisher models assigned.");
+            return;
+        }
+
         if (uiDocument != null)
         {
             var root = uiDocument.rootVisualElement;
-            nameLabel = root.Q<Label>(labelName);
+            fireNameLabel = root.Q<Label>(labelName);
+
+            if (fireNameLabel == null)
+                Debug.LogWarning($"[ExtinguisherModelSwitcher] Label '{labelName}' not found.");
+        }
+        else
+        {
+            Debug.LogWarning("[ExtinguisherModelSwitcher] UIDocument not assigned.");
         }
 
-        ShowModel(currentIndex);
+        ShowOnly(currentIndex);
     }
 
-    public void ShowModel(int index)
+    public void ShowOnly(int index)
     {
-        if (extinguisherModels == null || extinguisherModels.Length == 0)
-            return;
+        if (extinguisherModels == null || extinguisherModels.Length == 0) return;
+        if (index < 0 || index >= extinguisherModels.Length) return;
 
-        if (index < 0) index = 0;
-        if (index >= extinguisherModels.Length)
-            index = extinguisherModels.Length - 1;
+        currentIndex = index;
 
         for (int i = 0; i < extinguisherModels.Length; i++)
         {
             if (extinguisherModels[i] != null)
-            {
-                bool active = (i == index);
-                extinguisherModels[i].SetActive(active);
-            }
+                extinguisherModels[i].SetActive(i == currentIndex);
         }
 
-        currentIndex = index;
-        UpdateUILabel();
-
-        Debug.Log($"[ExtinguisherSwitcher] Showing index {currentIndex} -> {GetCurrentName()}");
-    }
-
-    void UpdateUILabel()
-    {
-        if (nameLabel == null) return;
-        nameLabel.text = GetCurrentName();
-    }
-
-    string GetCurrentName()
-    {
-        if (extinguisherNames != null && currentIndex < extinguisherNames.Length)
-            return extinguisherNames[currentIndex];
-
-        if (extinguisherModels != null &&
-            currentIndex >= 0 &&
-            currentIndex < extinguisherModels.Length &&
-            extinguisherModels[currentIndex] != null)
-        {
-            return extinguisherModels[currentIndex].name;
-        }
-
-        return $"Extinguisher {currentIndex}";
+        UpdateLabel();
     }
 
     public void NextModel()
     {
-        if (extinguisherModels == null || extinguisherModels.Length == 0)
-            return;
-
-        currentIndex++;
-        if (currentIndex >= extinguisherModels.Length)
-            currentIndex = 0;
-
-        ShowModel(currentIndex);
+        if (extinguisherModels == null || extinguisherModels.Length == 0) return;
+        currentIndex = (currentIndex + 1) % extinguisherModels.Length;
+        ShowOnly(currentIndex);
     }
 
     public void PreviousModel()
     {
-        if (extinguisherModels == null || extinguisherModels.Length == 0)
-            return;
-
+        if (extinguisherModels == null || extinguisherModels.Length == 0) return;
         currentIndex--;
-        if (currentIndex < 0)
-            currentIndex = extinguisherModels.Length - 1;
-
-        ShowModel(currentIndex);
+        if (currentIndex < 0) currentIndex = extinguisherModels.Length - 1;
+        ShowOnly(currentIndex);
     }
 
-    public void ShowFoam()
+    void UpdateLabel()
     {
-        Debug.Log($"[ExtinguisherSwitcher] Select FOAM -> index {foamIndex}");
-        ShowModel(foamIndex);
+        if (fireNameLabel == null) return;
+
+        if (extinguisherNames != null &&
+            currentIndex >= 0 &&
+            currentIndex < extinguisherNames.Length)
+        {
+            fireNameLabel.text = extinguisherNames[currentIndex];
+            Debug.Log($"[ExtinguisherModelSwitcher] Label updated to: {fireNameLabel.text}");
+        }
+        else
+        {
+            Debug.LogWarning("[ExtinguisherModelSwitcher] extinguisherNames is empty or index out of range.");
+        }
     }
 
-    public void ShowWater()
+    public GameObject GetCurrentExtinguisher()
     {
-        Debug.Log($"[ExtinguisherSwitcher] Select WATER -> index {waterIndex}");
-        ShowModel(waterIndex);
-    }
-
-    public void ShowPowder()
-    {
-        Debug.Log($"[ExtinguisherSwitcher] Select POWDER -> index {powderIndex}");
-        ShowModel(powderIndex);
-    }
-
-    public void ShowCarbon()
-    {
-        Debug.Log($"[ExtinguisherSwitcher] Select CARBON -> index {carbonIndex}");
-        ShowModel(carbonIndex);
-    }
-
-    public void ShowChemical()
-    {
-        Debug.Log($"[ExtinguisherSwitcher] Select CHEMICAL -> index {chemicalIndex}");
-        ShowModel(chemicalIndex);
-    }
-
-    public ExtinguisherExtinguish_CameraRay GetCurrentExtinguisher()
-    {
-        if (extinguisherModels == null || extinguisherModels.Length == 0)
+        if (extinguisherModels == null || currentIndex < 0 || currentIndex >= extinguisherModels.Length)
             return null;
 
-        GameObject current = extinguisherModels[currentIndex];
-        if (current == null) return null;
-
-        return current.GetComponentInChildren<ExtinguisherExtinguish_CameraRay>(true);
+        return extinguisherModels[currentIndex];
     }
+
+    public ExtinguisherExtinguish_CameraRay GetCurrentExtinguisherScript()
+    {
+        GameObject obj = GetCurrentExtinguisher();
+        if (obj == null) return null;
+
+        return obj.GetComponentInChildren<ExtinguisherExtinguish_CameraRay>(true);
+    }
+
+    public int GetCurrentIndex()
+    {
+        return currentIndex;
+    }
+
+    public int GetCurrentExtinguisherIndex()
+    {
+        return currentIndex;
+    }
+
+    public void ShowFoam() => ShowOnly(foamIndex);
+    public void ShowWater() => ShowOnly(waterIndex);
+    public void ShowPowder() => ShowOnly(powderIndex);
+    public void ShowCarbon() => ShowOnly(carbonIndex);
+    public void ShowChemical() => ShowOnly(chemicalIndex);
 }

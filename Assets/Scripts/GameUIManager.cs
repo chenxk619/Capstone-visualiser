@@ -67,10 +67,17 @@ public class GameUIManager : MonoBehaviour
             return;
         }
 
-        var extinguisher = extinguisherSwitcher ? extinguisherSwitcher.GetCurrentExtinguisher() : null;
-        if (extinguisher)
+        var extinguisher = extinguisherSwitcher != null
+            ? extinguisherSwitcher.GetCurrentExtinguisherScript()
+            : null;
+
+        if (extinguisher != null)
+        {
             extinguisher.ResetGame();
+        }
         else
-            Debug.LogWarning("[GameUIManager] No active extinguisher found from switcher.");
+        {
+            Debug.LogWarning("[GameUIManager] No active extinguisher script found.");
+        }
     }
 }

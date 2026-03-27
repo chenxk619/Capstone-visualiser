@@ -1,25 +1,19 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections;
-
-/**
- * FireChallenge
- * Rules:
- * - Player must extinguish a certain number of fires within a time limit.
- * - Fires are shown one at a time. When one is extinguished, the next appears.
- * - If time runs out, player loses.
- * - After all fires are extinguished, the final action stage begins.
- * - Player must execute BOTH Breach and Block to win.
- */
+using System.Collections.Generic;
 
 public class FireChallengeManager : MonoBehaviour
 {
     [Header("Challenge Rules")]
     public int firesToWin = 5;
-    public float timeLimitSeconds = 6000f;
+    public float timeLimitSeconds = 600f;
 
-    [Header("Fires (drag 5+ fire roots here)")]
+    [Header("Fires (match extinguisher index order)")]
     public GameObject[] fires;
+
+    [Header("Optional Fire Type Switcher")]
+    public FireTypeSwitcher fireTypeSwitcher;
 
     [Header("Door")]
     public GameObject doorRoot;
@@ -37,24 +31,27 @@ public class FireChallengeManager : MonoBehaviour
     [Header("UI Toolkit")]
     public string timerBarName = "timerBar";
     public string fireExtinguishedLabelName = "FireExtinguished";
+    public string fireNameLabelName = "FireName";
 
-    [Header("On-screen HUD (debug style)")]
-    public bool showHUD = true;
-    public int hudFontSize = 20;
-
-    private int extinguishedCount = 0;
-    private float timeLeft;
-    private bool running = false;
-
-    // Final stage flags
-    private bool waitingForFinalActions = false;
-    private bool BreachDone = false;
-    private bool blockDone = false;
-    private bool winTriggered = false;
+    [Header("Sequence")]
+    public bool randomizeFireOrder = false;
 
     private ProgressBar timerBar;
     private Label fireExtinguishedLabel;
+    private Label fireNameLabel;
 
+    private float timeLeft;
+    private bool running = false;
+    private int extinguishedCount = 0;
+
+    private bool waitingForFinalActions = false;
+    private bool breachDone = false;
+    private bool blockDone = false;
+    private bool winTriggered = false;
+
+    private List<int> fireSequence = new List<int>();
+
+    public int CurrentFireIndex { get; private set; } = -1;
     public int ExtinguishedCount => extinguishedCount;
     public float TimeLeft => Mathf.Max(0f, timeLeft);
     public bool Running => running;
@@ -67,46 +64,25 @@ public class FireChallengeManager : MonoBehaviour
 
             timerBar = root.Q<ProgressBar>(timerBarName);
             fireExtinguishedLabel = root.Q<Label>(fireExtinguishedLabelName);
+            fireNameLabel = root.Q<Label>(fireNameLabelName);
 
             if (timerBar != null)
             {
                 timerBar.lowValue = 0f;
                 timerBar.highValue = timeLimitSeconds;
             }
-            else
-            {
-                Debug.LogWarning($"[Challenge] ProgressBar named '{timerBarName}' not found.");
-            }
+
+            if (fireNameLabel == null)
+                Debug.LogWarning($"[FireChallengeManager] Label '{fireNameLabelName}' not found.");
 
             if (fireExtinguishedLabel == null)
-            {
-                Debug.LogWarning($"[Challenge] Label named '{fireExtinguishedLabelName}' not found.");
-            }
+                Debug.LogWarning($"[FireChallengeManager] Label '{fireExtinguishedLabelName}' not found.");
         }
 
-        HideAllFires();
-        HideDoor();
         ResetChallenge();
         UpdateTimerUI();
         UpdateFireExtinguishedUI();
-    }
-
-    public void StartChallenge()
-    {
-        if (doorRoot != null)
-        {
-            doorRoot.SetActive(false);
-        }
-
-        if (doorController != null)
-        {
-            doorController.hasBreached = false;
-        }
-        ResetChallenge();
-        running = true;
-        ActivateFire(0);
-        UpdateTimerUI();
-        UpdateFireExtinguishedUI();
+        UpdateFireNameUI("");
     }
 
     void Update()
@@ -114,7 +90,6 @@ public class FireChallengeManager : MonoBehaviour
         if (!running) return;
 
         timeLeft -= Time.deltaTime;
-
         if (timeLeft <= 0f)
         {
             timeLeft = 0f;
@@ -125,12 +100,128 @@ public class FireChallengeManager : MonoBehaviour
             HideDoor();
             UpdateTimerUI();
 
-            if (uiManager) uiManager.ShowLose();
+            if (uiManager != null)
+                uiManager.ShowLose();
+
             Debug.Log("[Challenge] Time up. Lose.");
             return;
         }
 
         UpdateTimerUI();
+    }
+
+    public void StartChallenge()
+    {
+        ResetChallenge();
+        BuildFireSequence();
+
+        running = true;
+        ActivateFire(0);
+
+        UpdateTimerUI();
+        UpdateFireExtinguishedUI();
+    }
+
+    void ResetChallenge()
+    {
+        extinguishedCount = 0;
+        timeLeft = timeLimitSeconds;
+        running = false;
+
+        waitingForFinalActions = false;
+        breachDone = false;
+        blockDone = false;
+        winTriggered = false;
+
+        CurrentFireIndex = -1;
+
+        HideAllFires();
+        HideDoor();
+
+        if (doorController != null)
+            doorController.ResetBreach();
+
+        var extinguisher = GetCurrentExtinguisherScript();
+        if (extinguisher != null)
+            extinguisher.ResetForNextFire(null, true);
+
+        UpdateTimerUI();
+        UpdateFireExtinguishedUI();
+        UpdateFireNameUI("");
+    }
+
+    void BuildFireSequence()
+    {
+        fireSequence.Clear();
+
+        if (fires == null || fires.Length == 0)
+            return;
+
+        for (int i = 0; i < fires.Length; i++)
+            fireSequence.Add(i);
+
+        if (randomizeFireOrder)
+        {
+            for (int i = 0; i < fireSequence.Count; i++)
+            {
+                int j = Random.Range(i, fireSequence.Count);
+                int temp = fireSequence[i];
+                fireSequence[i] = fireSequence[j];
+                fireSequence[j] = temp;
+            }
+        }
+
+        Debug.Log("[Challenge] Fire sequence: " + string.Join(", ", fireSequence));
+    }
+
+    void ActivateFire(int sequenceIndex)
+    {
+        if (fires == null || fires.Length == 0) return;
+        if (fireSequence == null || fireSequence.Count == 0) BuildFireSequence();
+        if (fireSequence.Count == 0) return;
+
+        if (sequenceIndex < 0) sequenceIndex = 0;
+        if (sequenceIndex >= fireSequence.Count) sequenceIndex = fireSequence.Count - 1;
+
+        int fireArrayIndex = fireSequence[sequenceIndex];
+        if (fireArrayIndex < 0 || fireArrayIndex >= fires.Length) return;
+
+        CurrentFireIndex = fireArrayIndex;
+
+        HideAllFires();
+
+        GameObject fire = fires[fireArrayIndex];
+        if (fire == null)
+        {
+            Debug.LogWarning($"[Challenge] Fire at index {fireArrayIndex} is null.");
+            return;
+        }
+
+        ShowOnlyCurrentFire(fireArrayIndex, fire);
+        UpdateFireNameUI(GetDisplayFireName(fireArrayIndex, fire));
+
+        var extinguisher = GetCurrentExtinguisherScript();
+        if (extinguisher != null)
+        {
+            extinguisher.ResetForNextFire(fire, true);
+        }
+        else
+        {
+            Debug.LogWarning("[Challenge] No active extinguisher script found.");
+        }
+
+        Debug.Log($"[Challenge] Activated fire sequence {sequenceIndex} -> fire index {fireArrayIndex}: {fire.name}");
+    }
+
+    void ShowOnlyCurrentFire(int fireIndex, GameObject fire)
+    {
+        if (fireTypeSwitcher != null)
+        {
+            fireTypeSwitcher.ShowFireByIndex(fireIndex);
+            return;
+        }
+
+        ShowFire(fire);
     }
 
     public void OnFireExtinguished()
@@ -144,13 +235,14 @@ public class FireChallengeManager : MonoBehaviour
 
         if (extinguishedCount >= firesToWin)
         {
-            // Enter final action stage
+            running = false;
+            waitingForFinalActions = true;
+            breachDone = false;
+            blockDone = false;
+
             HideAllFires();
             ShowDoor();
-
-            waitingForFinalActions = true;
-            BreachDone = false;
-            blockDone = false;
+            UpdateFireNameUI("Door");
 
             Debug.Log("[Challenge] All fires extinguished. Waiting for BOTH Breach and Block.");
             return;
@@ -159,163 +251,82 @@ public class FireChallengeManager : MonoBehaviour
         ActivateFire(extinguishedCount);
     }
 
-    /// <summary>
-    /// Call this when the player performs Breach.
-    /// Hook this to your Breach button / synced command / animation event.
-    /// </summary>
     public void ExecuteBreach()
     {
-        if (!waitingForFinalActions)
-        {
-            Debug.LogWarning("[Challenge] Breach ignored. Not in final action stage.");
-            return;
-        }
+        if (!waitingForFinalActions) return;
+        if (breachDone) return;
 
-        if (BreachDone)
-        {
-            Debug.Log("[Challenge] Breach already completed.");
-            return;
-        }
+        breachDone = true;
 
-        BreachDone = true;
-        Debug.Log("[Challenge] Breach completed.");
-
-        // Optional: trigger door animation here
         if (doorController != null && !doorController.hasBreached)
-        {
             doorController.BreachDoor();
-        }
 
         CheckFinalWinCondition();
     }
 
-    /// <summary>
-    /// Call this when the player performs BLOCK.
-    /// Hook this to your block button / synced command / animation event.
-    /// </summary>
     public void ExecuteBlock()
     {
-        if (!waitingForFinalActions)
-        {
-            Debug.LogWarning("[Challenge] Block ignored. Not in final action stage.");
-            return;
-        }
-
-        if (blockDone)
-        {
-            Debug.Log("[Challenge] Block already completed.");
-            return;
-        }
+        if (!waitingForFinalActions) return;
+        if (blockDone) return;
 
         blockDone = true;
-        Debug.Log("[Challenge] Block completed.");
 
-        riotShieldController.TriggerBlockShield();
+        if (riotShieldController != null)
+            riotShieldController.TriggerBlockShield();
 
         CheckFinalWinCondition();
     }
 
     void CheckFinalWinCondition()
     {
-        Debug.Log($"[Challenge] Final action status => Breach: {BreachDone}, Block: {blockDone}");
+        if (!waitingForFinalActions || winTriggered) return;
 
-        if (!waitingForFinalActions || winTriggered)
-            return;
-
-        if (BreachDone && blockDone)
+        if (breachDone && blockDone)
         {
             winTriggered = true;
             waitingForFinalActions = false;
-            running = false;
-
             StartCoroutine(WinSequence());
         }
     }
 
     IEnumerator WinSequence()
     {
-        // Wait a bit if you want the Breach/breach animation to finish
-        yield return new WaitForSeconds(1.2f);
+        yield return new WaitForSeconds(1.0f);
 
-        if (uiManager)
+        if (uiManager != null)
             uiManager.ShowWin();
-
-        Debug.Log("[Challenge] Both Breach and Block completed. Win panel shown.");
     }
 
     public GameObject GetCurrentFire()
     {
-        if (fires == null || fires.Length == 0) return null;
-        if (extinguishedCount < 0 || extinguishedCount >= fires.Length) return null;
-        return fires[extinguishedCount];
+        if (CurrentFireIndex < 0 || fires == null || CurrentFireIndex >= fires.Length)
+            return null;
+
+        return fires[CurrentFireIndex];
     }
 
     public void RefreshCurrentExtinguisher()
     {
-        var extinguisher = extinguisherSwitcher ? extinguisherSwitcher.GetCurrentExtinguisher() : null;
+        var extinguisher = GetCurrentExtinguisherScript();
         var currentFire = GetCurrentFire();
 
-        if (extinguisher != null && currentFire != null)
-        {
+        if (extinguisher != null)
             extinguisher.ResetForNextFire(currentFire, false);
-            Debug.Log($"[Challenge] Refreshed active extinguisher with current fire: {currentFire.name}");
-        }
-        else
-        {
-            Debug.LogWarning("[Challenge] Could not refresh extinguisher. Active extinguisher or current fire is null.");
-        }
     }
 
-    void ResetChallenge()
+    ExtinguisherExtinguish_CameraRay GetCurrentExtinguisherScript()
     {
-        extinguishedCount = 0;
-        timeLeft = timeLimitSeconds;
-        running = false;
+        if (extinguisherSwitcher == null)
+            return null;
 
-        waitingForFinalActions = false;
-        BreachDone = false;
-        blockDone = false;
-        winTriggered = false;
-
-        HideAllFires();
-        HideDoor();
-
-        if (doorController)
-            doorController.ResetBreach();
-
-        var extinguisher = extinguisherSwitcher ? extinguisherSwitcher.GetCurrentExtinguisher() : null;
-        if (extinguisher)
-            extinguisher.ResetForNextFire(null, true);
-
-        UpdateTimerUI();
-        UpdateFireExtinguishedUI();
-    }
-
-    void ActivateFire(int index)
-    {
-        if (fires == null || fires.Length == 0) return;
-
-        if (index < 0) index = 0;
-        if (index >= fires.Length) index = fires.Length - 1;
-
-        HideAllFires();
-
-        GameObject fire = fires[index];
-        if (!fire) return;
-
-        ShowFire(fire);
-
-        var extinguisher = extinguisherSwitcher ? extinguisherSwitcher.GetCurrentExtinguisher() : null;
-        if (extinguisher)
-            extinguisher.ResetForNextFire(fire, true);
-        else
-            Debug.LogWarning("[Challenge] No active extinguisher found from switcher.");
-
-        Debug.Log($"[Challenge] Activated fire index {index}: {fire.name}");
+        return extinguisherSwitcher.GetCurrentExtinguisherScript();
     }
 
     void HideAllFires()
     {
+        if (fireTypeSwitcher != null)
+            fireTypeSwitcher.HideAll();
+
         if (fires == null) return;
 
         foreach (var f in fires)
@@ -324,42 +335,26 @@ public class FireChallengeManager : MonoBehaviour
 
     void HideFire(GameObject fireRoot)
     {
-        if (!fireRoot) return;
-
-        foreach (var r in fireRoot.GetComponentsInChildren<Renderer>(true))
-            r.enabled = false;
+        if (fireRoot == null) return;
+        fireRoot.SetActive(false);
     }
 
     void ShowFire(GameObject fireRoot)
     {
-        if (!fireRoot) return;
-
-        foreach (var r in fireRoot.GetComponentsInChildren<Renderer>(true))
-            r.enabled = true;
+        if (fireRoot == null) return;
+        fireRoot.SetActive(true);
     }
 
     void HideDoor()
     {
-        if (!doorRoot) return;
-
-        doorRoot.SetActive(false);
-        Debug.Log("[Challenge] Door hidden");
+        if (doorRoot != null)
+            doorRoot.SetActive(false);
     }
 
     void ShowDoor()
     {
-        if (!doorRoot) return;
-
-        doorRoot.SetActive(true);
-        Debug.Log("[Challenge] Door shown");
-    }
-
-    public void ResetAndStart()
-    {
-        if (uiManager && uiManager.losePanel) uiManager.losePanel.SetActive(false);
-        if (uiManager && uiManager.winPanel) uiManager.winPanel.SetActive(false);
-
-        StartChallenge();
+        if (doorRoot != null)
+            doorRoot.SetActive(true);
     }
 
     void UpdateTimerUI()
@@ -377,8 +372,29 @@ public class FireChallengeManager : MonoBehaviour
 
     void UpdateFireExtinguishedUI()
     {
-        if (fireExtinguishedLabel == null) return;
+        if (fireExtinguishedLabel != null)
+            fireExtinguishedLabel.text = $"Fires: {extinguishedCount}/{firesToWin}";
+    }
 
-        fireExtinguishedLabel.text = $"Fires: {extinguishedCount}/{firesToWin}";
+    void UpdateFireNameUI(string text)
+    {
+        if (fireNameLabel != null)
+            fireNameLabel.text = text;
+    }
+
+    string GetDisplayFireName(int index, GameObject fire)
+    {
+        return fire != null ? fire.name : "";
+    }
+
+    public void ResetAndStart()
+    {
+        if (uiManager != null)
+        {
+            if (uiManager.losePanel != null) uiManager.losePanel.SetActive(false);
+            if (uiManager.winPanel != null) uiManager.winPanel.SetActive(false);
+        }
+
+        StartChallenge();
     }
 }

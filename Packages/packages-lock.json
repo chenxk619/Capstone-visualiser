@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.github-glitchenzo.nugetforunity": {
-      "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "c2af83c9d4f8cdaada9d4a0e94de2f195d8e1d01"
-    },
     "com.ptc.vuforia.engine": {
       "version": "file:com.ptc.vuforia.engine",
       "depth": 0,
@@ -313,13 +306,6 @@
         "com.unity.xr.legacyinputhelpers": "2.1.11"
       },
       "url": "https://packages.unity.com"
-    },
-    "org.kumas.nuget-importer": {
-      "version": "https://github.com/kumaS-nu/NuGet-importer-for-Unity.git?path=NuGetImporterForUnity/Packages/NuGet%20Importer",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "50cef9770fff131e15fa98255192cd9081776fcb"
     },
     "org.nuget.mqttnet": {
       "version": "file:MQTTnet",

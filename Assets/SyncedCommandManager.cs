@@ -156,7 +156,7 @@ public class SyncedCommandManager : MonoBehaviour
     {
         if (modelSwitcher != null)
         {
-            ExtinguisherExtinguish_CameraRay current = modelSwitcher.GetCurrentExtinguisher();
+            ExtinguisherExtinguish_CameraRay current = modelSwitcher.GetCurrentExtinguisherScript();
             if (current != null)
                 return current;
         }

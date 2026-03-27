@@ -6,7 +6,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     [Header("Safety Pin")]
     public string pinButtonName = "PinButton";
     private Button pinButton;
-
     private bool isPinPulled = false;
 
     [Header("Spray")]
@@ -17,16 +16,14 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     public float normalStartLifetime = 0.1f;
     public float pressureStartLifetime = 0.3f;
 
-    private bool isPressureMode = false;
+    [Header("Pressure Mode")]
+    public bool isPressureMode = false;
 
     [Header("Ray Source (AR Camera only)")]
     public Camera arCamera;
 
     [Header("Ray Origin (Extinguisher Nozzle)")]
     public Transform rayOrigin;
-
-    [Header("Ray Debug UI")]
-    public string rayButtonName = "RayDebugButton";
 
     [Header("Fire Target")]
     public LayerMask fireLayerMask;
@@ -38,7 +35,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Current Fire Root")]
     public GameObject fireRoot;
-    public bool hideRenderersOnly = true;
+    public bool hideRenderersOnly = false;
 
     [Header("Drag all extinguisher model roots here")]
     public GameObject[] extinguisherModels;
@@ -71,9 +68,16 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     [Header("Challenge Manager")]
     public FireChallengeManager challengeManager;
 
+    [Header("Extinguisher Switcher")]
+    public ExtinguisherModelSwitcher extinguisherSwitcher;
+
     [Header("Comms Input")]
     public bool showCommsLogs = true;
     private bool commsSprayHeld = false;
+
+    [Header("Wrong Type Feedback")]
+    public bool showWrongTypeLogs = true;
+    public string wrongTypeText = "Wrong Type";
 
     private float fuel;
     private ProgressBar fuelBar;
@@ -87,6 +91,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     {
         if (!spray) spray = GetComponent<ParticleSystem>();
         if (!arCamera) arCamera = Camera.main;
+
         ApplySprayModeSettings();
 
         fuel = maxFuel;
@@ -96,19 +101,18 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             var root = uiDocument.rootVisualElement;
 
             pinButton = root.Q<Button>(pinButtonName);
+            fuelBar = root.Q<ProgressBar>(fuelBarName);
+            rangeLabel = root.Q<Label>(rangeLabelName);
 
             if (pinButton != null)
             {
                 pinButton.clicked += TogglePin;
-                pinButton.text = isPinPulled ? "Pin: ON" : "Pin: OFF";
+                RefreshPinButtonText();
             }
             else
             {
                 Debug.LogWarning($"[Extinguisher] Button '{pinButtonName}' not found.");
             }
-
-            fuelBar = root.Q<ProgressBar>(fuelBarName);
-            rangeLabel = root.Q<Label>(rangeLabelName);
 
             if (fuelBar != null)
             {
@@ -166,9 +170,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         pressedNow = IsPressed() && isPinPulled;
 
         if (!pressedNow)
-        {
             UpdateRangeUI("");
-        }
 
         if (enableFuel && fuel <= 0f)
         {
@@ -183,11 +185,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         {
             if (pressedNow)
             {
-                if (!spray.isEmitting) spray.Play();
+                if (!spray.isEmitting)
+                    spray.Play();
             }
             else
             {
-                if (spray.isEmitting)
+                if (spray.isEmitting || spray.isPlaying)
                     spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             }
         }
@@ -222,40 +225,49 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         if (pressedNow)
         {
-            if (showDebug)
-                Debug.Log($"[{gameObject.name}] Spray input detected");
-
             if (RayHitsFire(out RaycastHit hit))
             {
-                if (showDebug)
-                    Debug.Log($"[{gameObject.name}] Ray hit: {hit.collider.name}, distance: {hit.distance:F2}");
-
                 float currentExtinguishDistance = GetCurrentExtinguishDistance();
+
+                if (showDebug)
+                {
+                    Debug.Log($"[{gameObject.name}] Ray hit: {hit.collider.name}, distance: {hit.distance:F2}, limit: {currentExtinguishDistance:F2}");
+                }
 
                 if (hit.distance <= currentExtinguishDistance)
                 {
-                    hitNow = true;
-                    UpdateRangeUI("In Range");
+                    if (IsCorrectExtinguisherForCurrentFire())
+                    {
+                        hitNow = true;
+                        UpdateRangeUI("In Range");
+                    }
+                    else
+                    {
+                        hitNow = false;
+                        timer = 0f;
+                        UpdateRangeUI(wrongTypeText);
 
-                    if (showDebug)
-                        Debug.Log($"[{gameObject.name}] Fire is within extinguish distance ({currentExtinguishDistance:F2})");
+                        if (showWrongTypeLogs)
+                        {
+                            Debug.Log($"[{gameObject.name}] Wrong extinguisher type.");
+                        }
+                    }
                 }
                 else
                 {
                     hitNow = false;
+                    timer = 0f;
                     UpdateRangeUI("Out of Range");
-
-                    if (showDebug)
-                        Debug.Log($"[{gameObject.name}] Hit fire but too far. Limit = {currentExtinguishDistance:F2}");
                 }
             }
             else
             {
                 hitNow = false;
+                timer = 0f;
                 UpdateRangeUI("Missed");
 
                 if (showDebug)
-                    Debug.Log($"[{gameObject.name}] Ray did NOT hit fire");
+                    Debug.Log($"[{gameObject.name}] Ray did not hit fire.");
             }
         }
 
@@ -276,7 +288,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     {
         hit = default;
 
-        if (!rayOrigin || !arCamera)
+        if (rayOrigin == null || arCamera == null)
             return false;
 
         Vector3 start = rayOrigin.position;
@@ -290,6 +302,20 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             fireLayerMask,
             QueryTriggerInteraction.Collide
         );
+    }
+
+    private bool IsCorrectExtinguisherForCurrentFire()
+    {
+        if (challengeManager == null || extinguisherSwitcher == null)
+            return true;
+
+        int requiredFireIndex = challengeManager.CurrentFireIndex;
+        int currentExtinguisherIndex = extinguisherSwitcher.GetCurrentExtinguisherIndex();
+
+        if (requiredFireIndex < 0)
+            return false;
+
+        return currentExtinguisherIndex == requiredFireIndex;
     }
 
     void Extinguish()
@@ -351,10 +377,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         pressedNow = false;
 
         fuel = maxFuel;
+        isPinPulled = false;
         commsSprayHeld = false;
 
         UpdateFuelUI();
         UpdateRangeUI("");
+        RefreshPinButtonText();
 
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -378,7 +406,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         if (text == "In Range")
             rangeLabel.style.color = new StyleColor(Color.green);
-        else if (text == "Out of Range")
+        else if (text == "Out of Range" || text == wrongTypeText)
             rangeLabel.style.color = new StyleColor(Color.red);
         else
             rangeLabel.style.color = new StyleColor(Color.white);
@@ -410,6 +438,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         hitNow = false;
         pressedNow = false;
         commsSprayHeld = false;
+        isPinPulled = false;
 
         if (refillFuel)
         {
@@ -426,26 +455,45 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             fireRoot = newFireRoot;
 
         ShowCurrentFire();
+        RefreshPinButtonText();
 
         inputLockTimer = inputLockAfterRestart;
-    }
-
-    float DistanceFromRayToPoint(Vector3 rayOrigin, Vector3 rayDir, Vector3 point)
-    {
-        Vector3 toPoint = point - rayOrigin;
-        Vector3 projection = Vector3.Project(toPoint, rayDir);
-        Vector3 closestPoint = rayOrigin + projection;
-        return Vector3.Distance(point, closestPoint);
     }
 
     void TogglePin()
     {
         isPinPulled = !isPinPulled;
+        RefreshPinButtonText();
 
-        Debug.Log(isPinPulled ? "Pin Pulled" : "Pin Inserted");
+        if (showDebug || showCommsLogs)
+            Debug.Log($"[Extinguisher] Pin pulled = {isPinPulled}");
+    }
 
-        if (pinButton != null)
-            pinButton.text = isPinPulled ? "Pin: ON" : "Pin: OFF";
+    void RefreshPinButtonText()
+    {
+        if (pinButton == null)
+            return;
+
+        pinButton.text = isPinPulled ? "Pin: OFF" : "Pin: ON";
+    }
+
+    public void PullPinFromComms()
+    {
+        isPinPulled = true;
+        RefreshPinButtonText();
+
+        if (showCommsLogs)
+            Debug.Log("[Extinguisher] Pin pulled by comms.");
+    }
+
+    public void InsertPinFromComms()
+    {
+        isPinPulled = false;
+        commsSprayHeld = false;
+        RefreshPinButtonText();
+
+        if (showCommsLogs)
+            Debug.Log("[Extinguisher] Pin inserted by comms.");
     }
 
     public void SetCommsSprayHeld(bool held)
@@ -456,36 +504,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             Debug.Log($"[Extinguisher] Comms spray held = {held}");
     }
 
-    public void PullPinFromComms()
-    {
-        if (isPinPulled)
-        {
-            if (showCommsLogs)
-                Debug.Log("[Extinguisher] Comms PullPin ignored, pin already pulled.");
-            return;
-        }
-
-        isPinPulled = true;
-
-        if (pinButton != null)
-            pinButton.text = "Pin: ON";
-
-        if (showCommsLogs)
-            Debug.Log("[Extinguisher] Pin pulled by comms.");
-    }
-
-    public void InsertPinFromComms()
-    {
-        isPinPulled = false;
-        commsSprayHeld = false;
-
-        if (pinButton != null)
-            pinButton.text = "Pin: OFF";
-
-        if (showCommsLogs)
-            Debug.Log("[Extinguisher] Pin inserted by comms.");
-    }
-
     public void SetPressureMode(bool enabled)
     {
         isPressureMode = enabled;
@@ -493,7 +511,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         if (showDebug || showCommsLogs)
         {
-            Debug.Log($"[Extinguisher] Pressure mode set to {enabled}. Current distance = {GetCurrentExtinguishDistance():F2}");
+            Debug.Log($"[Extinguisher] Pressure mode set to {enabled}. Distance = {GetCurrentExtinguishDistance():F2}");
         }
     }
 
@@ -519,5 +537,4 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         var main = spray.main;
         main.startLifetime = GetCurrentStartLifetime();
     }
-
 }
