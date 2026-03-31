@@ -465,7 +465,6 @@ MonoBehaviour:
   - {fileID: 841670011}
   - {fileID: 1829145809}
   - {fileID: 100993277}
-  fireTypeSwitcher: {fileID: 155868854}
   doorRoot: {fileID: 1429461391}
   doorController: {fileID: 1429461393}
   shieldRoot: {fileID: 353699592}
@@ -476,7 +475,6 @@ MonoBehaviour:
   timerBarName: timerBar
   fireExtinguishedLabelName: FireExtinguished
   fireNameLabelName: FireName
-  randomizeFireOrder: 1
 --- !u!1 &155868852
 GameObject:
   m_ObjectHideFlags: 0
@@ -1164,7 +1162,6 @@ MonoBehaviour:
   firesToWin: 5
   timeLimitSeconds: 30
   fires: []
-  fireTypeSwitcher: {fileID: 0}
   doorRoot: {fileID: 0}
   doorController: {fileID: 0}
   shieldRoot: {fileID: 0}
@@ -1175,7 +1172,6 @@ MonoBehaviour:
   timerBarName: timerBar
   fireExtinguishedLabelName: FireExtinguished
   fireNameLabelName: FireName
-  randomizeFireOrder: 0
 --- !u!1001 &622627795
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2274,6 +2270,7 @@ GameObject:
   - component: {fileID: 934194619}
   - component: {fileID: 934194618}
   - component: {fileID: 934194620}
+  - component: {fileID: 934194621}
   m_Layer: 0
   m_Name: ImageTarget_ClassF
   m_TagString: Untagged
@@ -2387,6 +2384,21 @@ MonoBehaviour:
   mCastedBehaviour: {fileID: 934194619}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
+--- !u!114 &934194621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 934194615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625c70e4365b840b9a965e258efebe6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrackedFireTarget
+  fireIndex: 4
+  fireObject: {fileID: 100993277}
+  challengeManager: {fileID: 123780600}
 --- !u!1 &960177662
 GameObject:
   m_ObjectHideFlags: 0
@@ -12630,6 +12642,7 @@ GameObject:
   - component: {fileID: 1227781699}
   - component: {fileID: 1227781698}
   - component: {fileID: 1227781700}
+  - component: {fileID: 1227781701}
   m_Layer: 0
   m_Name: ImageTarget_ClassA
   m_TagString: Untagged
@@ -12712,7 +12725,7 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: photo_2026-03-31_19-11-30
+  mTrackableName: classA
   mInitializedInEditor: 1
   mDataSetPath: 
   mAspectRatio: 0.96830994
@@ -12738,11 +12751,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 1227781699}
   mHiddenRoot: {fileID: 0}
-  mTargetName: photo_2026-03-31_19-11-30
+  mTargetName: classA
   mDatasetName: 
   mCastedBehaviour: {fileID: 1227781699}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
+--- !u!114 &1227781701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227781695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625c70e4365b840b9a965e258efebe6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrackedFireTarget
+  fireIndex: 0
+  fireObject: {fileID: 641087173}
+  challengeManager: {fileID: 123780600}
 --- !u!1 &1266802026
 GameObject:
   m_ObjectHideFlags: 0
@@ -13017,6 +13045,7 @@ GameObject:
   - component: {fileID: 1341332425}
   - component: {fileID: 1341332424}
   - component: {fileID: 1341332426}
+  - component: {fileID: 1341332427}
   m_Layer: 0
   m_Name: ImageTarget_Electrical
   m_TagString: Untagged
@@ -13130,6 +13159,21 @@ MonoBehaviour:
   mCastedBehaviour: {fileID: 1341332425}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
+--- !u!114 &1341332427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1341332421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625c70e4365b840b9a965e258efebe6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrackedFireTarget
+  fireIndex: 3
+  fireObject: {fileID: 1829145809}
+  challengeManager: {fileID: 123780600}
 --- !u!1001 &1348097939
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19851,6 +19895,7 @@ GameObject:
   - component: {fileID: 2046898014}
   - component: {fileID: 2046898013}
   - component: {fileID: 2046898015}
+  - component: {fileID: 2046898016}
   m_Layer: 0
   m_Name: ImageTarget_ClassC
   m_TagString: Untagged
@@ -19964,6 +20009,21 @@ MonoBehaviour:
   mCastedBehaviour: {fileID: 2046898014}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
+--- !u!114 &2046898016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2046898010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625c70e4365b840b9a965e258efebe6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrackedFireTarget
+  fireIndex: 2
+  fireObject: {fileID: 841670011}
+  challengeManager: {fileID: 123780600}
 --- !u!1 &2050697847
 GameObject:
   m_ObjectHideFlags: 0
@@ -20007,6 +20067,7 @@ GameObject:
   - component: {fileID: 2058107545}
   - component: {fileID: 2058107544}
   - component: {fileID: 2058107546}
+  - component: {fileID: 2058107547}
   m_Layer: 0
   m_Name: ImageTarget_ClassB
   m_TagString: Untagged
@@ -20120,6 +20181,21 @@ MonoBehaviour:
   mCastedBehaviour: {fileID: 2058107545}
   mMeshFilter: {fileID: 0}
   mMeshRenderer: {fileID: 0}
+--- !u!114 &2058107547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2058107541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625c70e4365b840b9a965e258efebe6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrackedFireTarget
+  fireIndex: 1
+  fireObject: {fileID: 1721445016}
+  challengeManager: {fileID: 123780600}
 --- !u!1 &2061930541
 GameObject:
   m_ObjectHideFlags: 0

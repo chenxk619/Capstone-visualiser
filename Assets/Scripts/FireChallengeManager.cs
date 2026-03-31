@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections;
-using System.Collections.Generic;
 
 public class FireChallengeManager : MonoBehaviour
 {
@@ -9,11 +8,8 @@ public class FireChallengeManager : MonoBehaviour
     public int firesToWin = 5;
     public float timeLimitSeconds = 600f;
 
-    [Header("Fires (match extinguisher index order)")]
+    [Header("Fires (optional references, order: A, B, C, Electrical, F)")]
     public GameObject[] fires;
-
-    [Header("Optional Fire Type Switcher")]
-    public FireTypeSwitcher fireTypeSwitcher;
 
     [Header("Door")]
     public GameObject doorRoot;
@@ -33,9 +29,6 @@ public class FireChallengeManager : MonoBehaviour
     public string fireExtinguishedLabelName = "FireExtinguished";
     public string fireNameLabelName = "FireName";
 
-    [Header("Sequence")]
-    public bool randomizeFireOrder = false;
-
     private ProgressBar timerBar;
     private Label fireExtinguishedLabel;
     private Label fireNameLabel;
@@ -48,8 +41,6 @@ public class FireChallengeManager : MonoBehaviour
     private bool breachDone = false;
     private bool blockDone = false;
     private bool winTriggered = false;
-
-    private List<int> fireSequence = new List<int>();
 
     public int CurrentFireIndex { get; private set; } = -1;
     public int ExtinguishedCount => extinguishedCount;
@@ -113,13 +104,14 @@ public class FireChallengeManager : MonoBehaviour
     public void StartChallenge()
     {
         ResetChallenge();
-        BuildFireSequence();
 
         running = true;
-        ActivateFire(0);
 
         UpdateTimerUI();
         UpdateFireExtinguishedUI();
+        UpdateFireNameUI("");
+
+        Debug.Log("[Challenge] Started. Waiting for scanned fire target.");
     }
 
     void ResetChallenge()
@@ -150,78 +142,36 @@ public class FireChallengeManager : MonoBehaviour
         UpdateFireNameUI("");
     }
 
-    void BuildFireSequence()
+    public void SetTrackedFire(int fireIndex, GameObject fire)
     {
-        fireSequence.Clear();
+        if (!running) return;
+        if (waitingForFinalActions) return;
+        if (fireIndex < 0) return;
 
-        if (fires == null || fires.Length == 0)
-            return;
-
-        for (int i = 0; i < fires.Length; i++)
-            fireSequence.Add(i);
-
-        if (randomizeFireOrder)
-        {
-            for (int i = 0; i < fireSequence.Count; i++)
-            {
-                int j = Random.Range(i, fireSequence.Count);
-                int temp = fireSequence[i];
-                fireSequence[i] = fireSequence[j];
-                fireSequence[j] = temp;
-            }
-        }
-
-        Debug.Log("[Challenge] Fire sequence: " + string.Join(", ", fireSequence));
-    }
-
-    void ActivateFire(int sequenceIndex)
-    {
-        if (fires == null || fires.Length == 0) return;
-        if (fireSequence == null || fireSequence.Count == 0) BuildFireSequence();
-        if (fireSequence.Count == 0) return;
-
-        if (sequenceIndex < 0) sequenceIndex = 0;
-        if (sequenceIndex >= fireSequence.Count) sequenceIndex = fireSequence.Count - 1;
-
-        int fireArrayIndex = fireSequence[sequenceIndex];
-        if (fireArrayIndex < 0 || fireArrayIndex >= fires.Length) return;
-
-        CurrentFireIndex = fireArrayIndex;
-
-        HideAllFires();
-
-        GameObject fire = fires[fireArrayIndex];
-        if (fire == null)
-        {
-            Debug.LogWarning($"[Challenge] Fire at index {fireArrayIndex} is null.");
-            return;
-        }
-
-        ShowOnlyCurrentFire(fireArrayIndex, fire);
-        UpdateFireNameUI(GetDisplayFireName(fireArrayIndex, fire));
+        CurrentFireIndex = fireIndex;
 
         var extinguisher = GetCurrentExtinguisherScript();
         if (extinguisher != null)
-        {
-            extinguisher.ResetForNextFire(fire, true);
-        }
-        else
-        {
-            Debug.LogWarning("[Challenge] No active extinguisher script found.");
-        }
+            extinguisher.ResetForNextFire(fire, false);
 
-        Debug.Log($"[Challenge] Activated fire sequence {sequenceIndex} -> fire index {fireArrayIndex}: {fire.name}");
+        UpdateFireNameUI(GetDisplayFireName(fireIndex, fire));
+
+        Debug.Log($"[Challenge] Tracking fire index {fireIndex}: {GetDisplayFireName(fireIndex, fire)}");
     }
 
-    void ShowOnlyCurrentFire(int fireIndex, GameObject fire)
+    public void ClearTrackedFire(int fireIndex)
     {
-        if (fireTypeSwitcher != null)
-        {
-            fireTypeSwitcher.ShowFireByIndex(fireIndex);
-            return;
-        }
+        if (CurrentFireIndex != fireIndex) return;
 
-        ShowFire(fire);
+        CurrentFireIndex = -1;
+
+        var extinguisher = GetCurrentExtinguisherScript();
+        if (extinguisher != null)
+            extinguisher.ResetForNextFire(null, false);
+
+        UpdateFireNameUI("");
+
+        Debug.Log($"[Challenge] Lost tracking for fire index {fireIndex}");
     }
 
     public void OnFireExtinguished()
@@ -232,6 +182,9 @@ public class FireChallengeManager : MonoBehaviour
         UpdateFireExtinguishedUI();
 
         Debug.Log($"[Challenge] Fire extinguished count = {extinguishedCount}");
+
+        CurrentFireIndex = -1;
+        UpdateFireNameUI("");
 
         if (extinguishedCount >= firesToWin)
         {
@@ -248,7 +201,7 @@ public class FireChallengeManager : MonoBehaviour
             return;
         }
 
-        ActivateFire(extinguishedCount);
+        Debug.Log("[Challenge] Waiting for next scanned fire target.");
     }
 
     public void ExecuteBreach()
@@ -324,9 +277,6 @@ public class FireChallengeManager : MonoBehaviour
 
     void HideAllFires()
     {
-        if (fireTypeSwitcher != null)
-            fireTypeSwitcher.HideAll();
-
         if (fires == null) return;
 
         foreach (var f in fires)
@@ -337,12 +287,6 @@ public class FireChallengeManager : MonoBehaviour
     {
         if (fireRoot == null) return;
         fireRoot.SetActive(false);
-    }
-
-    void ShowFire(GameObject fireRoot)
-    {
-        if (fireRoot == null) return;
-        fireRoot.SetActive(true);
     }
 
     void HideDoor()
@@ -384,7 +328,7 @@ public class FireChallengeManager : MonoBehaviour
 
     string GetDisplayFireName(int index, GameObject fire)
     {
-        return fire != null ? fire.name : "";
+        return fire != null ? fire.name : $"Fire {index}";
     }
 
     public void ResetAndStart()
