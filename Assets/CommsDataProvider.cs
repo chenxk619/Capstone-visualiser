@@ -261,7 +261,7 @@ public class CommsDataProvider : MonoBehaviour
 
     private IMqttClient client;
 
-    private const string Host = "172.20.10.3";
+    private const string Host = "10.144.89.48";
     private const int Port = 8883;
 
     private async void Awake()
