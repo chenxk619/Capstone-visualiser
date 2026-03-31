@@ -249,7 +249,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
                         if (showWrongTypeLogs)
                         {
-                            Debug.Log($"[{gameObject.name}] Wrong extinguisher type.");
+                            Debug.Log($"[{gameObject.name}] Wrong extinguisher type for current fire index {challengeManager.CurrentFireIndex}.");
                         }
                     }
                 }
@@ -310,12 +310,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             return true;
 
         int requiredFireIndex = challengeManager.CurrentFireIndex;
-        int currentExtinguisherIndex = extinguisherSwitcher.GetCurrentExtinguisherIndex();
 
         if (requiredFireIndex < 0)
             return false;
 
-        return currentExtinguisherIndex == requiredFireIndex;
+        return extinguisherSwitcher.CanCurrentExtinguisherPutOutFire(requiredFireIndex);
     }
 
     void Extinguish()

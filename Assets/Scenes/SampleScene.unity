@@ -336,7 +336,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1781949194303238870, guid: dd986d04bcc6dc748a53d8c3d1d42a6d, type: 3}
       propertyPath: m_Name
-      value: fire_chemical
+      value: Class F
       objectReference: {fileID: 0}
     - target: {fileID: 1781949194303238870, guid: dd986d04bcc6dc748a53d8c3d1d42a6d, type: 3}
       propertyPath: m_Layer
@@ -1684,7 +1684,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8295591563862043295, guid: e01f2e62cf41a3449be2dade3b2c2d79, type: 3}
       propertyPath: m_Name
-      value: fire_foam
+      value: Class A
       objectReference: {fileID: 0}
     - target: {fileID: 8295591563862043295, guid: e01f2e62cf41a3449be2dade3b2c2d79, type: 3}
       propertyPath: m_Layer
@@ -2120,7 +2120,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1255053967005034563, guid: 2ee7574cb1211da4ba89d1838327b5c4, type: 3}
       propertyPath: m_Name
-      value: fire_powder
+      value: Class C
       objectReference: {fileID: 0}
     - target: {fileID: 1255053967005034563, guid: 2ee7574cb1211da4ba89d1838327b5c4, type: 3}
       propertyPath: m_Layer
@@ -12968,14 +12968,14 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: photo_2026-03-12_16-03-05
+  mTrackableName: photo_2026-03-31_17-59-21
   mInitializedInEditor: 1
   mDataSetPath: 
-  mAspectRatio: 0.7138672
+  mAspectRatio: 0.633861
   mImageTargetType: 3
-  mWidth: 0.2
-  mHeight: 0.14277343
-  mRuntimeTexture: {fileID: 2800000, guid: 6646586f8e9744484824bc58620d5263, type: 3}
+  mWidth: 0.19999999
+  mHeight: 0.1267722
+  mRuntimeTexture: {fileID: 2800000, guid: 9e0191d3aba094b7d90c5da5daebe39a, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
@@ -13046,7 +13046,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 1440585650}
   mHiddenRoot: {fileID: 0}
-  mTargetName: photo_2026-03-12_16-03-05
+  mTargetName: photo_2026-03-31_17-59-21
   mDatasetName: 
   mCastedBehaviour: {fileID: 1440585650}
   mMeshFilter: {fileID: 0}
@@ -18577,7 +18577,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8295591563862043295, guid: e01f2e62cf41a3449be2dade3b2c2d79, type: 3}
       propertyPath: m_Name
-      value: fire_water
+      value: Class B
       objectReference: {fileID: 0}
     - target: {fileID: 8295591563862043295, guid: e01f2e62cf41a3449be2dade3b2c2d79, type: 3}
       propertyPath: m_Layer
@@ -19218,7 +19218,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
       propertyPath: m_Name
-      value: fire_carbon
+      value: Electrical
       objectReference: {fileID: 0}
     - target: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
       propertyPath: m_Layer

@@ -25,6 +25,22 @@ public class ExtinguisherModelSwitcher : MonoBehaviour
 
     private Label fireNameLabel;
 
+    /*
+    Fire indexes:
+    0 = Class A
+    1 = Class B
+    2 = Class C
+    3 = Electrical
+    4 = Class F
+
+    Extinguisher indexes:
+    0 = Foam
+    1 = Water
+    2 = Powder
+    3 = Carbon Dioxide
+    4 = Wet Chemical
+    */
+
     void Start()
     {
         if (extinguisherModels == null || extinguisherModels.Length == 0)
@@ -121,6 +137,39 @@ public class ExtinguisherModelSwitcher : MonoBehaviour
     public int GetCurrentExtinguisherIndex()
     {
         return currentIndex;
+    }
+
+    public int[] GetAllowedFireIndexesForCurrentExtinguisher()
+    {
+        if (currentIndex == foamIndex)       // Foam
+            return new int[] { 0, 1 };
+
+        if (currentIndex == waterIndex)      // Water
+            return new int[] { 0 };
+
+        if (currentIndex == powderIndex)     // ABC Powder
+            return new int[] { 0, 1, 2, 3 };
+
+        if (currentIndex == carbonIndex)     // Carbon Dioxide
+            return new int[] { 1, 3 };
+
+        if (currentIndex == chemicalIndex)   // Wet Chemical
+            return new int[] { 0, 4 };
+
+        return new int[0];
+    }
+
+    public bool CanCurrentExtinguisherPutOutFire(int fireIndex)
+    {
+        int[] allowedFireIndexes = GetAllowedFireIndexesForCurrentExtinguisher();
+
+        for (int i = 0; i < allowedFireIndexes.Length; i++)
+        {
+            if (allowedFireIndexes[i] == fireIndex)
+                return true;
+        }
+
+        return false;
     }
 
     public void ShowFoam() => ShowOnly(foamIndex);
