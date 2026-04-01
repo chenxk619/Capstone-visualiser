@@ -324,6 +324,8 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         hitNow = false;
         pressedNow = false;
 
+        GameObject extinguishedFire = fireRoot;
+
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
@@ -333,7 +335,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         inputLockTimer = inputLockAfterWin;
 
         if (challengeManager != null)
-            challengeManager.OnFireExtinguished();
+            challengeManager.OnFireExtinguished(extinguishedFire);
         else if (uiManager != null)
             uiManager.ShowWin();
     }
