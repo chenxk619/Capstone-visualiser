@@ -11,19 +11,20 @@ public class FireChallengeManager : MonoBehaviour
     [Header("Fires (order: A, B, C, Electrical, F)")]
     public GameObject[] fires;
 
-    [Header("Special Fire Burst")]
+    [Header("Special Fire Burst - Class C")]
     public int burstFireIndex = 2; // Class C
     public GameObject fireBurstObject;
     public Transform burstTargetCamera;
     public float burstBlockTimeLimit = 10f;
     public float burstStopDistance = 0.5f;
 
-    [Header("Door")]
-    public GameObject doorRoot;
-    public DoorBreachController doorController;
+    [Header("Special Door Breach - Class F")]
+    public int breachFireIndex = 4; // Class F
+    public GameObject breachDoorObject;
+    public DoorBreachController breachDoorController;
+    public float revealFireDelayAfterBreach = 2f;
 
     [Header("Shield")]
-    public GameObject shieldRoot;
     public RiotShieldController riotShieldController;
 
     [Header("References")]
@@ -44,16 +45,16 @@ public class FireChallengeManager : MonoBehaviour
     private bool running = false;
     private int extinguishedCount = 0;
 
-    private bool waitingForFinalBreach = false;
-    private bool breachDone = false;
     private bool winTriggered = false;
-
     private bool[] extinguishedFlags;
 
     private bool waitingForBurstBlock = false;
     private float burstTimer = 0f;
     private Vector3 burstStartPos;
-    private Quaternion burstStartRot;
+
+    private bool classFDoorBreached = false;
+    private bool waitingForClassFBreach = false;
+    private Coroutine revealFireRoutine;
 
     public int CurrentFireIndex { get; private set; } = -1;
     public int ExtinguishedCount => extinguishedCount;
@@ -104,19 +105,17 @@ public class FireChallengeManager : MonoBehaviour
             return;
         }
 
-        if (waitingForFinalBreach) return;
-
         timeLeft -= Time.deltaTime;
         if (timeLeft <= 0f)
         {
             timeLeft = 0f;
             running = false;
-            waitingForFinalBreach = false;
             waitingForBurstBlock = false;
+            waitingForClassFBreach = false;
 
             HideAllFires();
-            HideDoor();
             HideFireBurst();
+            HideBreachDoor();
             UpdateTimerUI();
 
             if (uiManager != null)
@@ -147,13 +146,19 @@ public class FireChallengeManager : MonoBehaviour
         extinguishedCount = 0;
         timeLeft = timeLimitSeconds;
         running = false;
-
-        waitingForFinalBreach = false;
-        breachDone = false;
         winTriggered = false;
 
         waitingForBurstBlock = false;
         burstTimer = 0f;
+
+        classFDoorBreached = false;
+        waitingForClassFBreach = false;
+
+        if (revealFireRoutine != null)
+        {
+            StopCoroutine(revealFireRoutine);
+            revealFireRoutine = null;
+        }
 
         CurrentFireIndex = -1;
 
@@ -165,11 +170,11 @@ public class FireChallengeManager : MonoBehaviour
             extinguishedFlags[i] = false;
 
         HideAllFires();
-        HideDoor();
         HideFireBurst();
+        HideBreachDoor();
 
-        if (doorController != null)
-            doorController.ResetBreach();
+        if (breachDoorController != null)
+            breachDoorController.ResetBreach();
 
         var extinguisher = GetCurrentExtinguisherScript();
         if (extinguisher != null)
@@ -185,7 +190,6 @@ public class FireChallengeManager : MonoBehaviour
     public void SetTrackedFire(int fireIndex, GameObject fire)
     {
         if (!running) return;
-        if (waitingForFinalBreach) return;
         if (waitingForBurstBlock) return;
         if (fireIndex < 0) return;
 
@@ -197,6 +201,36 @@ public class FireChallengeManager : MonoBehaviour
         }
 
         CurrentFireIndex = fireIndex;
+
+        // Special Class F logic: show door first, hide fire until breached
+        if (fireIndex == breachFireIndex)
+        {
+            if (!classFDoorBreached)
+            {
+                waitingForClassFBreach = true;
+
+                if (fire != null)
+                    fire.SetActive(false);
+
+                ShowBreachDoor();
+
+                var extinguisherForDoor = GetCurrentExtinguisherScript();
+                if (extinguisherForDoor != null)
+                    extinguisherForDoor.ResetForNextFire(null, false);
+
+                UpdateFireNameUI("Breach Door");
+
+                Debug.Log("[Challenge] Class F target tracked. Waiting for breach.");
+                return;
+            }
+            else
+            {
+                HideBreachDoor();
+
+                if (fire != null)
+                    fire.SetActive(true);
+            }
+        }
 
         var extinguisher = GetCurrentExtinguisherScript();
         if (extinguisher != null)
@@ -213,6 +247,12 @@ public class FireChallengeManager : MonoBehaviour
 
         CurrentFireIndex = -1;
 
+        if (fireIndex == breachFireIndex && !classFDoorBreached)
+        {
+            waitingForClassFBreach = false;
+            HideBreachDoor();
+        }
+
         var extinguisher = GetCurrentExtinguisherScript();
         if (extinguisher != null)
             extinguisher.ResetForNextFire(null, false);
@@ -225,7 +265,6 @@ public class FireChallengeManager : MonoBehaviour
     public void OnFireExtinguished(GameObject extinguishedFire)
     {
         if (!running) return;
-        if (waitingForFinalBreach) return;
         if (waitingForBurstBlock) return;
         if (extinguishedFire == null) return;
 
@@ -259,7 +298,7 @@ public class FireChallengeManager : MonoBehaviour
             return;
         }
 
-        CheckForFinalStageOrContinue();
+        CheckForWinOrContinue();
     }
 
     void StartBurstBlockPhase(Vector3 spawnPosition)
@@ -267,20 +306,21 @@ public class FireChallengeManager : MonoBehaviour
         if (fireBurstObject == null || burstTargetCamera == null)
         {
             Debug.LogWarning("[Challenge] Fire burst object or burst target camera is missing.");
-            CheckForFinalStageOrContinue();
+            CheckForWinOrContinue();
             return;
         }
 
         waitingForBurstBlock = true;
         burstTimer = burstBlockTimeLimit;
 
-        fireBurstObject.transform.position = spawnPosition;
+        Vector3 dirToCamera = (burstTargetCamera.position - spawnPosition).normalized;
+        fireBurstObject.transform.position = spawnPosition + dirToCamera * 0.2f;
         fireBurstObject.transform.LookAt(burstTargetCamera);
+
         burstStartPos = fireBurstObject.transform.position;
-        burstStartRot = fireBurstObject.transform.rotation;
 
         ShowFireBurst();
-        UpdateFireNameUI($"BLOCK!");
+        UpdateFireNameUI($"BLOCK! {Mathf.CeilToInt(burstTimer)}");
 
         Debug.Log("[Challenge] Class C extinguished -> Fire burst triggered. 10 seconds to block.");
     }
@@ -332,22 +372,103 @@ public class FireChallengeManager : MonoBehaviour
 
         Debug.Log("[Challenge] Fire burst blocked successfully.");
 
-        CheckForFinalStageOrContinue();
+        CheckForWinOrContinue();
     }
 
-    void CheckForFinalStageOrContinue()
+    public void ExecuteBreach()
+    {
+        Debug.Log($"[Challenge] ExecuteBreach called | running={running}, waitingForClassFBreach={waitingForClassFBreach}, classFDoorBreached={classFDoorBreached}, CurrentFireIndex={CurrentFireIndex}");
+
+        if (!running)
+        {
+            Debug.LogWarning("[Challenge] ExecuteBreach ignored: challenge is not running.");
+            return;
+        }
+
+        if (!waitingForClassFBreach)
+        {
+            Debug.LogWarning("[Challenge] ExecuteBreach ignored: not waiting for Class F breach.");
+            return;
+        }
+
+        if (classFDoorBreached)
+        {
+            Debug.LogWarning("[Challenge] ExecuteBreach ignored: door already breached.");
+            return;
+        }
+
+        classFDoorBreached = true;
+        waitingForClassFBreach = false;
+        CurrentFireIndex = breachFireIndex;
+
+        Debug.Log("[Challenge] Class F breach triggered.");
+
+        if (breachDoorController != null)
+        {
+            breachDoorController.BreachDoor();
+        }
+        else
+        {
+            Debug.LogWarning("[Challenge] No breachDoorController assigned.");
+        }
+
+        if (revealFireRoutine != null)
+            StopCoroutine(revealFireRoutine);
+
+        revealFireRoutine = StartCoroutine(RevealClassFFireAfterBreach());
+    }
+
+    IEnumerator RevealClassFFireAfterBreach()
+    {
+        yield return new WaitForSeconds(revealFireDelayAfterBreach);
+
+        HideBreachDoor();
+
+        if (fires == null || breachFireIndex < 0 || breachFireIndex >= fires.Length)
+        {
+            Debug.LogWarning("[Challenge] Class F fire index is invalid.");
+            revealFireRoutine = null;
+            yield break;
+        }
+
+        GameObject classFFire = fires[breachFireIndex];
+        if (classFFire == null)
+        {
+            Debug.LogWarning("[Challenge] Class F fire reference is missing.");
+            revealFireRoutine = null;
+            yield break;
+        }
+
+        CurrentFireIndex = breachFireIndex;
+
+        classFFire.SetActive(true);
+
+        var extinguisher = GetCurrentExtinguisherScript();
+        if (extinguisher != null)
+            extinguisher.ResetForNextFire(classFFire, false);
+
+        UpdateFireNameUI(GetDisplayFireName(breachFireIndex, classFFire));
+
+        Debug.Log("[Challenge] Class F fire revealed after breach.");
+
+        revealFireRoutine = null;
+    }
+
+    void CheckForWinOrContinue()
     {
         if (extinguishedCount >= firesToWin)
         {
             running = false;
-            waitingForFinalBreach = true;
-            breachDone = false;
 
             HideAllFires();
-            ShowDoor();
-            UpdateFireNameUI("Door");
+            HideBreachDoor();
+            HideFireBurst();
 
-            Debug.Log("[Challenge] All required fires extinguished. Waiting for BREACH only.");
+            UpdateFireNameUI("Completed");
+
+            Debug.Log("[Challenge] All required fires extinguished. Win.");
+
+            StartCoroutine(WinSequence());
             return;
         }
 
@@ -374,31 +495,6 @@ public class FireChallengeManager : MonoBehaviour
         }
 
         return -1;
-    }
-
-    public void ExecuteBreach()
-    {
-        if (!waitingForFinalBreach) return;
-        if (breachDone) return;
-
-        breachDone = true;
-
-        if (doorController != null && !doorController.hasBreached)
-            doorController.BreachDoor();
-
-        CheckFinalWinCondition();
-    }
-
-    void CheckFinalWinCondition()
-    {
-        if (!waitingForFinalBreach || winTriggered) return;
-
-        if (breachDone)
-        {
-            winTriggered = true;
-            waitingForFinalBreach = false;
-            StartCoroutine(WinSequence());
-        }
     }
 
     IEnumerator WinSequence()
@@ -448,28 +544,60 @@ public class FireChallengeManager : MonoBehaviour
         fireRoot.SetActive(false);
     }
 
-    void HideDoor()
+    void ShowBreachDoor()
     {
-        if (doorRoot != null)
-            doorRoot.SetActive(false);
+        if (breachDoorObject == null) return;
+
+        breachDoorObject.SetActive(true);
+
+        foreach (var r in breachDoorObject.GetComponentsInChildren<Renderer>(true))
+            r.enabled = true;
+
+        Debug.Log("[Challenge] Breach door shown.");
     }
 
-    void ShowDoor()
+    void HideBreachDoor()
     {
-        if (doorRoot != null)
-            doorRoot.SetActive(true);
+        if (breachDoorObject == null) return;
+
+        // Disable all renderers too, in case animator/state keeps visuals around
+        foreach (var r in breachDoorObject.GetComponentsInChildren<Renderer>(true))
+            r.enabled = false;
+
+        breachDoorObject.SetActive(false);
+
+        Debug.Log("[Challenge] Breach door hidden.");
     }
 
     void ShowFireBurst()
     {
-        if (fireBurstObject != null)
-            fireBurstObject.SetActive(true);
+        if (fireBurstObject == null) return;
+
+        fireBurstObject.SetActive(true);
+
+        var particles = fireBurstObject.GetComponentsInChildren<ParticleSystem>(true);
+        foreach (var ps in particles)
+        {
+            ps.Clear(true);
+            ps.Play(true);
+        }
+
+        Debug.Log("[Challenge] Fire burst shown.");
     }
 
     void HideFireBurst()
     {
-        if (fireBurstObject != null)
-            fireBurstObject.SetActive(false);
+        if (fireBurstObject == null) return;
+
+        var particles = fireBurstObject.GetComponentsInChildren<ParticleSystem>(true);
+        foreach (var ps in particles)
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        fireBurstObject.SetActive(false);
+
+        Debug.Log("[Challenge] Fire burst hidden.");
     }
 
     void UpdateTimerUI()

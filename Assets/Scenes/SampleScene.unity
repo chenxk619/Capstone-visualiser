@@ -584,9 +584,10 @@ MonoBehaviour:
   burstTargetCamera: {fileID: 648773781}
   burstBlockTimeLimit: 14
   burstStopDistance: 0.5
-  doorRoot: {fileID: 1429461391}
-  doorController: {fileID: 1429461393}
-  shieldRoot: {fileID: 353699592}
+  breachFireIndex: 4
+  breachDoorObject: {fileID: 1429461391}
+  breachDoorController: {fileID: 1429461393}
+  revealFireDelayAfterBreach: 2
   riotShieldController: {fileID: 837000815}
   extinguisherSwitcher: {fileID: 1440585653}
   uiManager: {fileID: 216040271}
@@ -1287,9 +1288,10 @@ MonoBehaviour:
   burstTargetCamera: {fileID: 0}
   burstBlockTimeLimit: 10
   burstStopDistance: 0.5
-  doorRoot: {fileID: 0}
-  doorController: {fileID: 0}
-  shieldRoot: {fileID: 0}
+  breachFireIndex: 4
+  breachDoorObject: {fileID: 0}
+  breachDoorController: {fileID: 0}
+  revealFireDelayAfterBreach: 0.6
   riotShieldController: {fileID: 0}
   extinguisherSwitcher: {fileID: 0}
   uiManager: {fileID: 0}
@@ -2481,6 +2483,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1270087102}
   - {fileID: 100993276}
   m_Father: {fileID: 155868853}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -13012,7 +13015,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1288822641}
+    m_TransformParent: {fileID: 934194616}
     m_Modifications:
     - target: {fileID: -5644133064174452605, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
       propertyPath: m_Controller
@@ -13032,7 +13035,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.3
+      value: 0.29999998
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
       propertyPath: m_LocalScale.y
@@ -13040,11 +13043,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.3
+      value: 0.29999995
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.019
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8897093224900880590, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -13099,131 +13102,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8897093224900880590, guid: d38aaa30e2b23469ebf61ecbe6746da8, type: 3}
   m_PrefabInstance: {fileID: 1270087101}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1288822637
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1288822641}
-  - component: {fileID: 1288822640}
-  - component: {fileID: 1288822639}
-  - component: {fileID: 1288822642}
-  m_Layer: 0
-  m_Name: ImageTarget
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1288822639
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288822637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
-  UsePoseSmoothing: 0
-  AnimationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 3.3333333
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.3
-      value: 1
-      inSlope: 3.3333333
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  OnTargetFound:
-    m_PersistentCalls:
-      m_Calls: []
-  OnTargetLost:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1288822640
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288822637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1631628248, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetBehaviour
-  PreviewVisible: 1
-  RuntimeOcclusion: 0
-  RuntimeCollider: 0
-  mTrackableName: capstone_img
-  mInitializedInEditor: 1
-  mDataSetPath: 
-  mAspectRatio: 1.0343435
-  mImageTargetType: 3
-  mWidth: 0.19335938
-  mHeight: 0.2
-  mRuntimeTexture: {fileID: 2800000, guid: 55691f63302a441e9947403cc34fe149, type: 3}
-  mMotionHint: 1
-  mTrackingOptimization: 0
-  mTrackingOptimizationNeedsUpgrade: 0
-  mPreview: {fileID: 1288822642}
---- !u!4 &1288822641
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288822637}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.075, y: 0.143, z: 1.602}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1270087102}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1288822642
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288822637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1778676317, guid: 8a9a760f95896c34689febc965510927, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
-  mObserverBehaviour: {fileID: 1288822640}
-  mHiddenRoot: {fileID: 0}
-  mTargetName: capstone_img
-  mDatasetName: 
-  mCastedBehaviour: {fileID: 1288822640}
-  mMeshFilter: {fileID: 0}
-  mMeshRenderer: {fileID: 0}
 --- !u!1 &1341332421
 GameObject:
   m_ObjectHideFlags: 0
@@ -13493,7 +13371,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcafcaf12dede45f68003f58eb9785a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorBreachController
-  doorRoot: {fileID: 0}
+  doorRoot: {fileID: 1429461391}
   animator: {fileID: 1429461392}
   breachTriggerName: Breach
   allowOnlyOnce: 1
@@ -13972,6 +13850,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoorBreachUIController
   uiDocument: {fileID: 1729673543}
   breachButtonName: BreachButton
+  challengeManager: {fileID: 123780600}
   doorBreachController: {fileID: 1429461393}
 --- !u!1 &1597214282
 GameObject:
@@ -25585,7 +25464,6 @@ SceneRoots:
   - {fileID: 1729673544}
   - {fileID: 648773781}
   - {fileID: 155868853}
-  - {fileID: 1288822641}
   - {fileID: 1440585651}
   - {fileID: 1747390748}
   - {fileID: 499742651}

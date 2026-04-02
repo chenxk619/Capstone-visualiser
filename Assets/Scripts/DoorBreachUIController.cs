@@ -7,7 +7,10 @@ public class DoorBreachUIController : MonoBehaviour
     public UIDocument uiDocument;
     public string breachButtonName = "BreachButton";
 
-    [Header("Door")]
+    [Header("Challenge")]
+    public FireChallengeManager challengeManager;
+
+    [Header("Fallback Door")]
     public DoorBreachController doorBreachController;
 
     private Button breachButton;
@@ -41,13 +44,20 @@ public class DoorBreachUIController : MonoBehaviour
 
     public void TriggerBreach()
     {
-        if (doorBreachController == null)
+        Debug.Log("[DoorBreachUIController] Breach triggered.");
+
+        if (challengeManager != null)
         {
-            Debug.LogWarning("[DoorBreachUIController] DoorBreachController not assigned.");
+            challengeManager.ExecuteBreach();
             return;
         }
 
-        Debug.Log("[DoorBreachUIController] Breach triggered.");
-        doorBreachController.BreachDoor();
+        if (doorBreachController != null)
+        {
+            doorBreachController.BreachDoor();
+            return;
+        }
+
+        Debug.LogWarning("[DoorBreachUIController] No FireChallengeManager or DoorBreachController assigned.");
     }
 }
