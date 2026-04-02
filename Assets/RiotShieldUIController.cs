@@ -10,6 +10,9 @@ public class RiotShieldUIController : MonoBehaviour
     [Header("Shield")]
     public RiotShieldController riotShieldController;
 
+    [Header("Challenge")]
+    public FireChallengeManager challengeManager;
+
     private Button blockButton;
 
     void Start()
@@ -41,13 +44,18 @@ public class RiotShieldUIController : MonoBehaviour
 
     public void TriggerBlock()
     {
-        if (riotShieldController == null)
+        Debug.Log("[RiotShieldUIController] Block triggered.");
+
+        if (challengeManager != null)
         {
-            Debug.LogWarning("[RiotShieldUIController] RiotShieldController not assigned.");
+            challengeManager.ExecuteBlock();
             return;
         }
 
-        Debug.Log("[RiotShieldUIController] Block triggered.");
-        riotShieldController.TriggerBlockShield();
+        // Fallback only if no challenge manager assigned
+        if (riotShieldController != null)
+            riotShieldController.TriggerBlockShield();
+        else
+            Debug.LogWarning("[RiotShieldUIController] No RiotShieldController or FireChallengeManager assigned.");
     }
 }

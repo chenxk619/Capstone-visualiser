@@ -11,6 +11,13 @@ public class FireChallengeManager : MonoBehaviour
     [Header("Fires (order: A, B, C, Electrical, F)")]
     public GameObject[] fires;
 
+    [Header("Special Fire Burst")]
+    public int burstFireIndex = 2; // Class C
+    public GameObject fireBurstObject;
+    public Transform burstTargetCamera;
+    public float burstBlockTimeLimit = 10f;
+    public float burstStopDistance = 0.5f;
+
     [Header("Door")]
     public GameObject doorRoot;
     public DoorBreachController doorController;
@@ -37,13 +44,16 @@ public class FireChallengeManager : MonoBehaviour
     private bool running = false;
     private int extinguishedCount = 0;
 
-    private bool waitingForFinalActions = false;
+    private bool waitingForFinalBreach = false;
     private bool breachDone = false;
-    private bool blockDone = false;
     private bool winTriggered = false;
 
-    // Tracks whether each fire index has already been extinguished
     private bool[] extinguishedFlags;
+
+    private bool waitingForBurstBlock = false;
+    private float burstTimer = 0f;
+    private Vector3 burstStartPos;
+    private Quaternion burstStartRot;
 
     public int CurrentFireIndex { get; private set; } = -1;
     public int ExtinguishedCount => extinguishedCount;
@@ -88,15 +98,25 @@ public class FireChallengeManager : MonoBehaviour
     {
         if (!running) return;
 
+        if (waitingForBurstBlock)
+        {
+            UpdateBurstAttack();
+            return;
+        }
+
+        if (waitingForFinalBreach) return;
+
         timeLeft -= Time.deltaTime;
         if (timeLeft <= 0f)
         {
             timeLeft = 0f;
             running = false;
-            waitingForFinalActions = false;
+            waitingForFinalBreach = false;
+            waitingForBurstBlock = false;
 
             HideAllFires();
             HideDoor();
+            HideFireBurst();
             UpdateTimerUI();
 
             if (uiManager != null)
@@ -128,21 +148,25 @@ public class FireChallengeManager : MonoBehaviour
         timeLeft = timeLimitSeconds;
         running = false;
 
-        waitingForFinalActions = false;
+        waitingForFinalBreach = false;
         breachDone = false;
-        blockDone = false;
         winTriggered = false;
+
+        waitingForBurstBlock = false;
+        burstTimer = 0f;
 
         CurrentFireIndex = -1;
 
-        if (extinguishedFlags == null || extinguishedFlags.Length != ((fires != null && fires.Length > 0) ? fires.Length : 5))
-            extinguishedFlags = new bool[(fires != null && fires.Length > 0) ? fires.Length : 5];
+        int count = (fires != null && fires.Length > 0) ? fires.Length : 5;
+        if (extinguishedFlags == null || extinguishedFlags.Length != count)
+            extinguishedFlags = new bool[count];
 
         for (int i = 0; i < extinguishedFlags.Length; i++)
             extinguishedFlags[i] = false;
 
         HideAllFires();
         HideDoor();
+        HideFireBurst();
 
         if (doorController != null)
             doorController.ResetBreach();
@@ -161,8 +185,10 @@ public class FireChallengeManager : MonoBehaviour
     public void SetTrackedFire(int fireIndex, GameObject fire)
     {
         if (!running) return;
-        if (waitingForFinalActions) return;
+        if (waitingForFinalBreach) return;
+        if (waitingForBurstBlock) return;
         if (fireIndex < 0) return;
+
         if (IsFireAlreadyExtinguished(fireIndex))
         {
             if (fire != null)
@@ -199,6 +225,8 @@ public class FireChallengeManager : MonoBehaviour
     public void OnFireExtinguished(GameObject extinguishedFire)
     {
         if (!running) return;
+        if (waitingForFinalBreach) return;
+        if (waitingForBurstBlock) return;
         if (extinguishedFire == null) return;
 
         int extinguishedFireIndex = GetFireIndex(extinguishedFire);
@@ -225,18 +253,101 @@ public class FireChallengeManager : MonoBehaviour
 
         UpdateFireNameUI("");
 
+        if (extinguishedFireIndex == burstFireIndex)
+        {
+            StartBurstBlockPhase(extinguishedFire.transform.position);
+            return;
+        }
+
+        CheckForFinalStageOrContinue();
+    }
+
+    void StartBurstBlockPhase(Vector3 spawnPosition)
+    {
+        if (fireBurstObject == null || burstTargetCamera == null)
+        {
+            Debug.LogWarning("[Challenge] Fire burst object or burst target camera is missing.");
+            CheckForFinalStageOrContinue();
+            return;
+        }
+
+        waitingForBurstBlock = true;
+        burstTimer = burstBlockTimeLimit;
+
+        fireBurstObject.transform.position = spawnPosition;
+        fireBurstObject.transform.LookAt(burstTargetCamera);
+        burstStartPos = fireBurstObject.transform.position;
+        burstStartRot = fireBurstObject.transform.rotation;
+
+        ShowFireBurst();
+        UpdateFireNameUI($"BLOCK!");
+
+        Debug.Log("[Challenge] Class C extinguished -> Fire burst triggered. 10 seconds to block.");
+    }
+
+    void UpdateBurstAttack()
+    {
+        if (fireBurstObject == null || burstTargetCamera == null)
+            return;
+
+        burstTimer -= Time.deltaTime;
+
+        float total = Mathf.Max(0.01f, burstBlockTimeLimit);
+        float progress = Mathf.Clamp01(1f - (burstTimer / total));
+
+        Vector3 targetPos = burstTargetCamera.position;
+        Vector3 newPos = Vector3.Lerp(burstStartPos, targetPos, progress);
+        fireBurstObject.transform.position = newPos;
+        fireBurstObject.transform.LookAt(burstTargetCamera);
+
+        UpdateFireNameUI($"BLOCK! {Mathf.CeilToInt(Mathf.Max(0f, burstTimer))}");
+
+        float distToCamera = Vector3.Distance(fireBurstObject.transform.position, burstTargetCamera.position);
+
+        if (burstTimer <= 0f || distToCamera <= burstStopDistance)
+        {
+            waitingForBurstBlock = false;
+            HideFireBurst();
+            running = false;
+
+            UpdateFireNameUI("Burned");
+            Debug.Log("[Challenge] Player failed to block the fire burst. Lose.");
+
+            if (uiManager != null)
+                uiManager.ShowLose();
+        }
+    }
+
+    public void ExecuteBlock()
+    {
+        if (!waitingForBurstBlock) return;
+
+        waitingForBurstBlock = false;
+
+        if (riotShieldController != null)
+            riotShieldController.TriggerBlockShield();
+
+        HideFireBurst();
+        UpdateFireNameUI("");
+
+        Debug.Log("[Challenge] Fire burst blocked successfully.");
+
+        CheckForFinalStageOrContinue();
+    }
+
+    void CheckForFinalStageOrContinue()
+    {
         if (extinguishedCount >= firesToWin)
         {
             running = false;
-            waitingForFinalActions = true;
+            waitingForFinalBreach = true;
             breachDone = false;
-            blockDone = false;
 
             HideAllFires();
             ShowDoor();
             UpdateFireNameUI("Door");
 
-            Debug.Log("[Challenge] All required fires extinguished. Waiting for BOTH Breach and Block.");
+            Debug.Log("[Challenge] All required fires extinguished. Waiting for BREACH only.");
             return;
         }
 
@@ -251,9 +362,23 @@ public class FireChallengeManager : MonoBehaviour
         return extinguishedFlags[fireIndex];
     }
 
+    int GetFireIndex(GameObject fireObject)
+    {
+        if (fireObject == null || fires == null)
+            return -1;
+
+        for (int i = 0; i < fires.Length; i++)
+        {
+            if (fires[i] == fireObject)
+                return i;
+        }
+
+        return -1;
+    }
+
     public void ExecuteBreach()
     {
-        if (!waitingForFinalActions) return;
+        if (!waitingForFinalBreach) return;
         if (breachDone) return;
 
         breachDone = true;
@@ -264,27 +389,14 @@ public class FireChallengeManager : MonoBehaviour
         CheckFinalWinCondition();
     }
 
-    public void ExecuteBlock()
-    {
-        if (!waitingForFinalActions) return;
-        if (blockDone) return;
-
-        blockDone = true;
-
-        if (riotShieldController != null)
-            riotShieldController.TriggerBlockShield();
-
-        CheckFinalWinCondition();
-    }
-
     void CheckFinalWinCondition()
     {
-        if (!waitingForFinalActions || winTriggered) return;
+        if (!waitingForFinalBreach || winTriggered) return;
 
-        if (breachDone && blockDone)
+        if (breachDone)
         {
             winTriggered = true;
-            waitingForFinalActions = false;
+            waitingForFinalBreach = false;
             StartCoroutine(WinSequence());
         }
     }
@@ -346,6 +458,18 @@ public class FireChallengeManager : MonoBehaviour
     {
         if (doorRoot != null)
             doorRoot.SetActive(true);
+    }
+
+    void ShowFireBurst()
+    {
+        if (fireBurstObject != null)
+            fireBurstObject.SetActive(true);
+    }
+
+    void HideFireBurst()
+    {
+        if (fireBurstObject != null)
+            fireBurstObject.SetActive(false);
     }
 
     void UpdateTimerUI()
@@ -412,19 +536,5 @@ public class FireChallengeManager : MonoBehaviour
         }
 
         StartChallenge();
-    }
-
-    int GetFireIndex(GameObject fireObject)
-    {
-        if (fireObject == null || fires == null)
-            return -1;
-
-        for (int i = 0; i < fires.Length; i++)
-        {
-            if (fires[i] == fireObject)
-                return i;
-        }
-
-        return -1;
     }
 }
