@@ -22,6 +22,8 @@ public class GameUIManager : MonoBehaviour
 
     public FireChallengeManager challengeManager;
 
+    public UITutorialManager tutorialManager;
+
     void Start()
     {
         if (winPanel) winPanel.SetActive(false);
@@ -78,6 +80,24 @@ public class GameUIManager : MonoBehaviour
         else
         {
             Debug.LogWarning("[GameUIManager] No active extinguisher script found.");
+        }
+    }
+
+    public void StartTutorial()
+    {
+        Debug.Log("[GameUIManager] START TUTORIAL CLICKED");
+
+        if (winPanel) winPanel.SetActive(false);
+        if (losePanel) losePanel.SetActive(false);
+        if (startPanel) startPanel.SetActive(false);
+
+        if (tutorialManager != null)
+        {
+            tutorialManager.OpenTutorial();
+        }
+        else
+        {
+            Debug.LogWarning("[GameUIManager] No UITutorialManager assigned.");
         }
     }
 }

@@ -700,6 +700,7 @@ MonoBehaviour:
   losePanel: {fileID: 1817173662}
   extinguisherSwitcher: {fileID: 1440585653}
   challengeManager: {fileID: 123780600}
+  tutorialManager: {fileID: 1523471378}
 --- !u!1 &230449997
 GameObject:
   m_ObjectHideFlags: 0
@@ -1297,9 +1298,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1523471377}
-        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
+      - m_Target: {fileID: 1523471378}
+        m_TargetAssemblyTypeName: UITutorialManager, Assembly-CSharp
         m_MethodName: OpenTutorial
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 216040271}
+        m_TargetAssemblyTypeName: GameUIManager, Assembly-CSharp
+        m_MethodName: StartTutorial
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -14133,7 +14146,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1523471376}
-  - component: {fileID: 1523471377}
+  - component: {fileID: 1523471378}
   m_Layer: 0
   m_Name: TutorialManager
   m_TagString: Untagged
@@ -14156,7 +14169,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 499742651}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1523471377
+--- !u!114 &1523471378
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -14165,17 +14178,68 @@ MonoBehaviour:
   m_GameObject: {fileID: 1523471375}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1e90100e95db43b4a067f8a419a400c, type: 3}
+  m_Script: {fileID: 11500000, guid: 177a363b6d7f34f2d8129b4792b85e22, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
+  m_EditorClassIdentifier: Assembly-CSharp::UITutorialManager
   uiDocument: {fileID: 1729673543}
-  tutorialPanelName: TutorialPanel
-  titleLabelName: TutorialTitle
-  bodyLabelName: TutorialBody
-  nextButtonName: TutorialNextButton
-  prevButtonName: TutorialPrevButton
-  closeButtonName: TutorialCloseButton
-  steps: []
+  steps:
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: 
+    description: 
+    targetElementName: 
+    arrowDirection: 0
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  startPanelCanvas: {fileID: 0}
 --- !u!1 &1523472715
 GameObject:
   m_ObjectHideFlags: 0

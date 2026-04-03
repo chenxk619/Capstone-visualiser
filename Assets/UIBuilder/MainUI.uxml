@@ -29,12 +29,12 @@
     </ui:VisualElement>
     <ui:VisualElement name="TutorialOverlay" data-source="" style="flex-grow: 1; transform-origin: right bottom; scale: 1 2;">
         <ui:VisualElement name="TutorialHighlight" style="flex-grow: 1;"/>
-        <ui:VisualElement name="TutorialArrow" style="flex-grow: 1;"/>
+        <ui:Label text="Label" name="TutorialArrow"/>
         <ui:VisualElement name="TutorialTextPanel" style="flex-grow: 1;">
             <ui:VisualElement name="TutorialTitle" style="flex-grow: 1;"/>
             <ui:VisualElement name="TutorialBody" style="flex-grow: 1;"/>
-            <ui:VisualElement name="TutorialNextButton" style="flex-grow: 1;"/>
-            <ui:VisualElement name="TutorialCloseButton" style="flex-grow: 1;"/>
+            <ui:Button text="" name="TutorialNextButton" selectable="true" style="position: absolute; top: 17px; left: 461px; height: 0; width: 0; background-image: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=-1087164816274819069&amp;guid=b2df7dedb7f6f4f7d8c1afec303e14bd&amp;type=3#arrow-right@2x&quot;); -unity-background-image-tint-color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+            <ui:Button text="Button" name="TutorialCloseButton"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
