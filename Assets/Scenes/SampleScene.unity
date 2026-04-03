@@ -14183,63 +14183,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UITutorialManager
   uiDocument: {fileID: 1729673543}
   steps:
-  - title: 
-    description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+  - title: Fires Extinguished
+    description: This shows how many fires you have extinguished so far.
+    targetElementName: FireExtinguished
+    arrowDirection: 1
+    textPanelOffset: {x: 0, y: 8}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: timerBar
     description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    targetElementName: timerBar
+    arrowDirection: 1
+    textPanelOffset: {x: 0, y: 8}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: BreachButton
     description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    targetElementName: BreachButton
+    arrowDirection: 2
+    textPanelOffset: {x: -40, y: 5}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: BlockButton
     description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    targetElementName: BlockButton
+    arrowDirection: 2
+    textPanelOffset: {x: -40, y: 5}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: PinButton
     description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    targetElementName: PinButton
+    arrowDirection: 2
+    textPanelOffset: {x: -185, y: -5}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: togglePressureButton
     description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    targetElementName: togglePressureButton
+    arrowDirection: 2
+    textPanelOffset: {x: -185, y: -5}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: FuelBar
     description: 
-    targetElementName: 
+    targetElementName: FuelBar
     arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    textPanelOffset: {x: -30, y: -100}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  - title: 
+    padding: 4
+  - title: FireExtinguisherName
     description: 
-    targetElementName: 
-    arrowDirection: 0
-    textPanelOffset: {x: 0, y: 0}
+    targetElementName: FireExtinguisherName
+    arrowDirection: 1
+    textPanelOffset: {x: -40, y: 6}
     arrowOffset: {x: 0, y: 0}
-    padding: 0
-  startPanelCanvas: {fileID: 0}
+    padding: 4
 --- !u!1 &1523472715
 GameObject:
   m_ObjectHideFlags: 0

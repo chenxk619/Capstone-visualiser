@@ -10,10 +10,14 @@ public class UITutorialManager : MonoBehaviour
     [Header("Tutorial Steps")]
     public List<UITutorialStep> steps = new List<UITutorialStep>();
 
-    public GameObject startPanelCanvas;
-
     private VisualElement root;
     private VisualElement tutorialOverlay;
+
+    private VisualElement tutorialMaskTop;
+    private VisualElement tutorialMaskBottom;
+    private VisualElement tutorialMaskLeft;
+    private VisualElement tutorialMaskRight;
+
     private VisualElement tutorialHighlight;
     private Label tutorialArrow;
     private VisualElement tutorialTextPanel;
@@ -36,6 +40,12 @@ public class UITutorialManager : MonoBehaviour
         root = uiDocument.rootVisualElement;
 
         tutorialOverlay = root.Q<VisualElement>("TutorialOverlay");
+
+        tutorialMaskTop = root.Q<VisualElement>("TutorialMaskTop");
+        tutorialMaskBottom = root.Q<VisualElement>("TutorialMaskBottom");
+        tutorialMaskLeft = root.Q<VisualElement>("TutorialMaskLeft");
+        tutorialMaskRight = root.Q<VisualElement>("TutorialMaskRight");
+
         tutorialHighlight = root.Q<VisualElement>("TutorialHighlight");
         tutorialArrow = root.Q<Label>("TutorialArrow");
         tutorialTextPanel = root.Q<VisualElement>("TutorialTextPanel");
@@ -63,16 +73,14 @@ public class UITutorialManager : MonoBehaviour
 
         tutorialOpen = true;
         currentStepIndex = 0;
-        ShowCurrentStep();
+
+        Invoke(nameof(ShowCurrentStep), 0.05f);
     }
 
     public void CloseTutorial()
     {
         tutorialOpen = false;
         HideTutorial();
-
-        if (startPanelCanvas != null)
-            startPanelCanvas.SetActive(true);
     }
 
     void HideTutorial()
@@ -119,54 +127,133 @@ public class UITutorialManager : MonoBehaviour
 
     void PositionTutorialElements(VisualElement target, UITutorialStep step)
     {
+        if (tutorialHighlight == null || tutorialArrow == null || tutorialTextPanel == null)
+        {
+            Debug.LogWarning("[UITutorialManager] Missing tutorial UI references.");
+            return;
+        }
+
         Rect r = target.worldBound;
+        Rect rootRect = root.worldBound;
 
-        float x = r.xMin - step.padding;
-        float y = r.yMin - step.padding;
-        float w = r.width + step.padding * 2f;
-        float h = r.height + step.padding * 2f;
+        float padding = Mathf.Max(4f, step.padding);
 
-        tutorialHighlight.style.left = x;
-        tutorialHighlight.style.top = y;
-        tutorialHighlight.style.width = w;
-        tutorialHighlight.style.height = h;
+        float holeX = r.xMin - padding;
+        float holeY = r.yMin - padding;
+        float holeW = r.width + padding * 2f;
+        float holeH = r.height + padding * 2f;
 
+        tutorialHighlight.style.left = holeX;
+        tutorialHighlight.style.top = holeY;
+        tutorialHighlight.style.width = holeW;
+        tutorialHighlight.style.height = holeH;
+
+        PositionMasks(rootRect, holeX, holeY, holeW, holeH);
+        PositionArrow(r, rootRect, step);
+        PositionTextPanel(r, rootRect, step);
+        PositionNextButton(rootRect);
+    }
+
+    void PositionMasks(Rect rootRect, float holeX, float holeY, float holeW, float holeH)
+    {
+        if (tutorialMaskTop != null)
+        {
+            tutorialMaskTop.style.left = 0;
+            tutorialMaskTop.style.top = 0;
+            tutorialMaskTop.style.width = rootRect.width;
+            tutorialMaskTop.style.height = holeY;
+        }
+
+        if (tutorialMaskBottom != null)
+        {
+            tutorialMaskBottom.style.left = 0;
+            tutorialMaskBottom.style.top = holeY + holeH;
+            tutorialMaskBottom.style.width = rootRect.width;
+            tutorialMaskBottom.style.height = Mathf.Max(0, rootRect.height - (holeY + holeH));
+        }
+
+        if (tutorialMaskLeft != null)
+        {
+            tutorialMaskLeft.style.left = 0;
+            tutorialMaskLeft.style.top = holeY;
+            tutorialMaskLeft.style.width = holeX;
+            tutorialMaskLeft.style.height = holeH;
+        }
+
+        if (tutorialMaskRight != null)
+        {
+            tutorialMaskRight.style.left = holeX + holeW;
+            tutorialMaskRight.style.top = holeY;
+            tutorialMaskRight.style.width = Mathf.Max(0, rootRect.width - (holeX + holeW));
+            tutorialMaskRight.style.height = holeH;
+        }
+    }
+
+    void PositionArrow(Rect r, Rect rootRect, UITutorialStep step)
+    {
         string arrowChar = "↓";
-        Vector2 arrowPos = new Vector2(r.center.x, r.yMin - 40f);
+        Vector2 arrowPos = new Vector2(r.center.x - 10f, r.yMin - 28f);
 
         switch (step.arrowDirection)
         {
             case TutorialArrowDirection.Up:
                 arrowChar = "↑";
-                arrowPos = new Vector2(r.center.x - 10f, r.yMax + 5f);
+                arrowPos = new Vector2(r.center.x - 10f, r.yMax + 2f);
                 break;
 
             case TutorialArrowDirection.Down:
                 arrowChar = "↓";
-                arrowPos = new Vector2(r.center.x - 10f, r.yMin - 45f);
+                arrowPos = new Vector2(r.center.x - 10f, r.yMin - 28f);
                 break;
 
             case TutorialArrowDirection.Left:
                 arrowChar = "←";
-                arrowPos = new Vector2(r.xMax + 5f, r.center.y - 20f);
+                arrowPos = new Vector2(r.xMax + 2f, r.center.y - 14f);
                 break;
 
             case TutorialArrowDirection.Right:
                 arrowChar = "→";
-                arrowPos = new Vector2(r.xMin - 35f, r.center.y - 20f);
+                arrowPos = new Vector2(r.xMin - 24f, r.center.y - 14f);
                 break;
         }
 
         arrowPos += step.arrowOffset;
 
         tutorialArrow.text = arrowChar;
-        tutorialArrow.style.left = arrowPos.x;
-        tutorialArrow.style.top = arrowPos.y;
+        tutorialArrow.style.left = Mathf.Clamp(arrowPos.x, 0f, rootRect.width - 24f);
+        tutorialArrow.style.top = Mathf.Clamp(arrowPos.y, 0f, rootRect.height - 24f);
+    }
 
-        Vector2 panelPos = new Vector2(r.xMin, r.yMax) + step.textPanelOffset;
+    void PositionTextPanel(Rect r, Rect rootRect, UITutorialStep step)
+    {
+        float panelWidth = 220f;
+        float panelHeight = 110f;
 
-        tutorialTextPanel.style.left = panelPos.x;
-        tutorialTextPanel.style.top = panelPos.y;
+        float x = (rootRect.width - panelWidth) * 0.5f;
+        float y = (rootRect.height - panelHeight) * 0.5f;
+
+        tutorialTextPanel.style.width = panelWidth;
+        tutorialTextPanel.style.minHeight = panelHeight;
+        tutorialTextPanel.style.left = x;
+        tutorialTextPanel.style.top = y;
+    }
+
+    void PositionNextButton(Rect rootRect)
+    {
+        if (tutorialNextButton == null)
+            return;
+
+        float buttonWidth = 80f;
+        float buttonHeight = 30f;
+
+        float x = rootRect.width - buttonWidth - 12f;
+        float y = (rootRect.height - buttonHeight) * 0.5f;
+
+        tutorialNextButton.style.position = Position.Absolute;
+        tutorialNextButton.style.width = buttonWidth;
+        tutorialNextButton.style.height = buttonHeight;
+        tutorialNextButton.style.left = x;
+        tutorialNextButton.style.top = y;
     }
 
     public void NextStep()
