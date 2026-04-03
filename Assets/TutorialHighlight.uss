@@ -1,0 +1,43 @@
+#TutorialOverlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    display: none;
+}
+
+#TutorialHighlight {
+    position: absolute;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-top-color: yellow;
+    border-right-color: yellow;
+    border-bottom-color: yellow;
+    border-left-color: yellow;
+    background-color: rgba(255, 255, 0, 0.08);
+    display: none;
+}
+
+#TutorialArrow {
+    position: absolute;
+    font-size: 40px;
+    color: yellow;
+    unity-font-style: bold;
+    display: none;
+}
+
+#TutorialTextPanel {
+    position: absolute;
+    width: 320px;
+    min-height: 140px;
+    background-color: rgba(0, 0, 0, 0.85);
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    display: none;
+}
