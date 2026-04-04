@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Video;
 
 [System.Serializable]
 public class UITutorialStep
@@ -12,7 +13,11 @@ public class UITutorialStep
 
     public TutorialArrowDirection arrowDirection = TutorialArrowDirection.Down;
 
-    public Vector2 textPanelOffset = new Vector2(0, 120);
-    public Vector2 arrowOffset = new Vector2(0, -50);
-    public float padding = 10f;
+    public Vector2 textPanelOffset = new Vector2(0, 0);
+    public Vector2 arrowOffset = new Vector2(0, 0);
+    public float padding = 8f;
+
+    [Header("Optional Media")]
+    public Sprite tutorialImage;
+    public VideoClip tutorialVideo;
 }

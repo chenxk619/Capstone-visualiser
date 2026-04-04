@@ -14184,59 +14184,90 @@ MonoBehaviour:
   uiDocument: {fileID: 1729673543}
   steps:
   - title: Fires Extinguished
-    description: This shows how many fires you have extinguished so far.
+    description: This shows how many fires you have extinguished so far. Extinguish
+      all five fires to win the challenge.
     targetElementName: FireExtinguished
     arrowDirection: 1
-    textPanelOffset: {x: 0, y: 8}
+    textPanelOffset: {x: 90, y: 8}
     arrowOffset: {x: 0, y: 0}
     padding: 4
-  - title: timerBar
-    description: 
+  - title: Timer Bar
+    description: Shows how much time is left. When it reaches 0, you lose.
     targetElementName: timerBar
     arrowDirection: 1
     textPanelOffset: {x: 0, y: 8}
     arrowOffset: {x: 0, y: 0}
     padding: 4
-  - title: BreachButton
-    description: 
-    targetElementName: BreachButton
-    arrowDirection: 2
-    textPanelOffset: {x: -40, y: 5}
+  - title: FireExtinguisher Name
+    description: Shows the type of fire extinguisher being currently used.
+    targetElementName: FireExtinguisherName
+    arrowDirection: 1
+    textPanelOffset: {x: -40, y: 6}
     arrowOffset: {x: 0, y: 0}
     padding: 4
-  - title: BlockButton
-    description: 
-    targetElementName: BlockButton
-    arrowDirection: 2
-    textPanelOffset: {x: -40, y: 5}
+  - title: Fire Name
+    description: 'This shows the type of fire currently being shown. Note that only
+      certain types of fire extinguishers can be used for each type of fire. '
+    targetElementName: FireName
+    arrowDirection: 1
+    textPanelOffset: {x: -40, y: 6}
     arrowOffset: {x: 0, y: 0}
     padding: 4
-  - title: PinButton
-    description: 
+  - title: Pin Button
+    description: The pin has to be pulled from a fire extinguisher to squeeze the
+      nozzle. Performed using a left hand pulling motion from the right hand.
     targetElementName: PinButton
     arrowDirection: 2
     textPanelOffset: {x: -185, y: -5}
     arrowOffset: {x: 0, y: 0}
     padding: 4
-  - title: togglePressureButton
-    description: 
+  - title: Pressure Button
+    description: 'The pressure of each fire extinguisher can be used to enable a
+      further spray (between pressure and normal mode). Performed by twisting the
+      right hand. '
     targetElementName: togglePressureButton
     arrowDirection: 2
     textPanelOffset: {x: -185, y: -5}
     arrowOffset: {x: 0, y: 0}
     padding: 4
   - title: FuelBar
-    description: 
+    description: Shows how much fuel is being used, the fuel will refill on a fire
+      extinguished
     targetElementName: FuelBar
     arrowDirection: 0
     textPanelOffset: {x: -30, y: -100}
     arrowOffset: {x: 0, y: 0}
     padding: 4
-  - title: FireExtinguisherName
-    description: 
-    targetElementName: FireExtinguisherName
-    arrowDirection: 1
-    textPanelOffset: {x: -40, y: 6}
+  - title: Previous Button
+    description: Used to switch to the previous extinguisher. Performed by shouting
+      previous.
+    targetElementName: PrevExtinguisherButton
+    arrowDirection: 2
+    textPanelOffset: {x: 0, y: 0}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: Next Button
+    description: Used to switch to the previous extinguisher. Performed by shouting
+      next.
+    targetElementName: NextExtinguisherButton
+    arrowDirection: 2
+    textPanelOffset: {x: 0, y: 5}
+    arrowOffset: {x: 0, y: 0}
+    padding: 0
+  - title: Breach Button
+    description: 'Breach is used when there is a door in the way to reveal a fire.
+      The user has to shout breach and perform a punch with their right hand. '
+    targetElementName: BreachButton
+    arrowDirection: 2
+    textPanelOffset: {x: -40, y: 5}
+    arrowOffset: {x: 0, y: 0}
+    padding: 4
+  - title: Block Button
+    description: 'Block is used to block a oncoming fire when a type of  fire is
+      put out. The user has to shout block and perform a block with their right hand. '
+    targetElementName: BlockButton
+    arrowDirection: 2
+    textPanelOffset: {x: -40, y: 5}
     arrowOffset: {x: 0, y: 0}
     padding: 4
 --- !u!1 &1523472715
