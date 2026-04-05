@@ -651,6 +651,74 @@ MonoBehaviour:
   powderFire: {fileID: 841670011}
   carbonFire: {fileID: 1829145809}
   chemicalFire: {fileID: 100993277}
+--- !u!1 &208383269
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 208383270}
+  - component: {fileID: 208383271}
+  m_Layer: 0
+  m_Name: TutorialVideoPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &208383270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208383269}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 816.57837, y: 0.00003, z: -972.4383}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1523471376}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!328 &208383271
+VideoPlayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 208383269}
+  m_Enabled: 1
+  m_VideoClip: {fileID: 32900000, guid: 85f6ba115dae145139b42d7df21eb063, type: 3}
+  m_TargetCameraAlpha: 1
+  m_TargetCamera3DLayout: 0
+  m_TargetCamera: {fileID: 0}
+  m_TargetTexture: {fileID: 8400000, guid: 1a3733a390bcf4612ba1566ebaa1cb26, type: 2}
+  m_TimeReference: 0
+  m_TargetMaterialRenderer: {fileID: 0}
+  m_TargetMaterialProperty: <noninit>
+  m_RenderMode: 2
+  m_AspectRatio: 2
+  m_DataSource: 0
+  m_TimeUpdateMode: 2
+  m_PlaybackSpeed: 1
+  m_AudioOutputMode: 0
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
+  m_Url: 
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
+  m_PlayOnAwake: 1
+  m_SkipOnDrop: 1
+  m_Looping: 0
+  m_WaitForFirstFrame: 1
+  m_FrameReadyEventEnabled: 0
+  m_VideoShaders: []
 --- !u!1 &216040269
 GameObject:
   m_ObjectHideFlags: 0
@@ -14166,7 +14234,8 @@ Transform:
   m_LocalPosition: {x: 5.21811, y: 0, z: -1.5844799}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 208383270}
   m_Father: {fileID: 499742651}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1523471378
@@ -14187,89 +14256,117 @@ MonoBehaviour:
     description: This shows how many fires you have extinguished so far. Extinguish
       all five fires to win the challenge.
     targetElementName: FireExtinguished
-    arrowDirection: 1
-    textPanelOffset: {x: 90, y: 8}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
   - title: Timer Bar
     description: Shows how much time is left. When it reaches 0, you lose.
     targetElementName: timerBar
-    arrowDirection: 1
-    textPanelOffset: {x: 0, y: 8}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
   - title: FireExtinguisher Name
     description: Shows the type of fire extinguisher being currently used.
     targetElementName: FireExtinguisherName
-    arrowDirection: 1
-    textPanelOffset: {x: -40, y: 6}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
   - title: Fire Name
     description: 'This shows the type of fire currently being shown. Note that only
       certain types of fire extinguishers can be used for each type of fire. '
     targetElementName: FireName
-    arrowDirection: 1
-    textPanelOffset: {x: -40, y: 6}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
+  - title: 
+    description: 
+    targetElementName: FireName
+    padding: 4
+    tutorialImage: {fileID: 2800000, guid: af434ec050120407e81c4819af112711, type: 3}
+    tutorialVideo: {fileID: 0}
   - title: Pin Button
     description: The pin has to be pulled from a fire extinguisher to squeeze the
       nozzle. Performed using a left hand pulling motion from the right hand.
     targetElementName: PinButton
-    arrowDirection: 2
-    textPanelOffset: {x: -185, y: -5}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
+  - title: 
+    description: 
+    targetElementName: PinButton
+    padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 32900000, guid: 85f6ba115dae145139b42d7df21eb063, type: 3}
   - title: Pressure Button
     description: 'The pressure of each fire extinguisher can be used to enable a
       further spray (between pressure and normal mode). Performed by twisting the
       right hand. '
     targetElementName: togglePressureButton
-    arrowDirection: 2
-    textPanelOffset: {x: -185, y: -5}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
+  - title: 
+    description: 
+    targetElementName: togglePressureButton
+    padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 32900000, guid: 8ca4f2c88f55c47e38df6e392d3f890a, type: 3}
   - title: FuelBar
     description: Shows how much fuel is being used, the fuel will refill on a fire
       extinguished
     targetElementName: FuelBar
-    arrowDirection: 0
-    textPanelOffset: {x: -30, y: -100}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
   - title: Previous Button
     description: Used to switch to the previous extinguisher. Performed by shouting
       previous.
     targetElementName: PrevExtinguisherButton
-    arrowDirection: 2
-    textPanelOffset: {x: 0, y: 0}
-    arrowOffset: {x: 0, y: 0}
     padding: 0
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
   - title: Next Button
     description: Used to switch to the previous extinguisher. Performed by shouting
       next.
     targetElementName: NextExtinguisherButton
-    arrowDirection: 2
-    textPanelOffset: {x: 0, y: 5}
-    arrowOffset: {x: 0, y: 0}
     padding: 0
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
   - title: Breach Button
     description: 'Breach is used when there is a door in the way to reveal a fire.
       The user has to shout breach and perform a punch with their right hand. '
     targetElementName: BreachButton
-    arrowDirection: 2
-    textPanelOffset: {x: -40, y: 5}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
+  - title: 
+    description: 
+    targetElementName: BreachButton
+    padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 32900000, guid: 217b8cf3da2fe4206a0bd15009864ba2, type: 3}
   - title: Block Button
-    description: 'Block is used to block a oncoming fire when a type of  fire is
-      put out. The user has to shout block and perform a block with their right hand. '
+    description: Block is used when there is a fire approaching the user. The user
+      has to shout block and perform a block with their right hand.
     targetElementName: BlockButton
-    arrowDirection: 2
-    textPanelOffset: {x: -40, y: 5}
-    arrowOffset: {x: 0, y: 0}
     padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
+  - title: 
+    description: 
+    targetElementName: BlockButton
+    padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 32900000, guid: e9c4b120783ac40688340aa851600153, type: 3}
+  - title: Information
+    description: Displays useful information about whether the fire extinguisher
+      is in range, and of the correct type.
+    targetElementName: Range
+    padding: 4
+    tutorialImage: {fileID: 0}
+    tutorialVideo: {fileID: 0}
+  tutorialVideoPlayer: {fileID: 208383271}
+  tutorialRenderTexture: {fileID: 8400000, guid: 1a3733a390bcf4612ba1566ebaa1cb26, type: 2}
 --- !u!1 &1523472715
 GameObject:
   m_ObjectHideFlags: 0

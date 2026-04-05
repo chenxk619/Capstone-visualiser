@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.Video;
 
 public class UITutorialManager : MonoBehaviour
 {
@@ -9,6 +10,10 @@ public class UITutorialManager : MonoBehaviour
 
     [Header("Tutorial Steps")]
     public List<UITutorialStep> steps = new List<UITutorialStep>();
+
+    [Header("Optional Video")]
+    public VideoPlayer tutorialVideoPlayer;
+    public RenderTexture tutorialRenderTexture;
 
     private VisualElement root;
     private VisualElement tutorialOverlay;
@@ -19,12 +24,12 @@ public class UITutorialManager : MonoBehaviour
     private VisualElement tutorialMaskRight;
 
     private VisualElement tutorialHighlight;
-    private Label tutorialArrow;
+
     private VisualElement tutorialTextPanel;
     private Label tutorialTitle;
     private Label tutorialBody;
+    private VisualElement tutorialMediaImage;
     private Button tutorialNextButton;
-    private Button tutorialCloseButton;
 
     private int currentStepIndex = 0;
     private bool tutorialOpen = false;
@@ -47,18 +52,17 @@ public class UITutorialManager : MonoBehaviour
         tutorialMaskRight = root.Q<VisualElement>("TutorialMaskRight");
 
         tutorialHighlight = root.Q<VisualElement>("TutorialHighlight");
-        tutorialArrow = root.Q<Label>("TutorialArrow");
+
         tutorialTextPanel = root.Q<VisualElement>("TutorialTextPanel");
         tutorialTitle = root.Q<Label>("TutorialTitle");
         tutorialBody = root.Q<Label>("TutorialBody");
+        tutorialMediaImage = root.Q<VisualElement>("TutorialMediaImage");
         tutorialNextButton = root.Q<Button>("TutorialNextButton");
-        tutorialCloseButton = root.Q<Button>("TutorialCloseButton");
 
         if (tutorialNextButton != null)
             tutorialNextButton.clicked += NextStep;
-
-        if (tutorialCloseButton != null)
-            tutorialCloseButton.clicked += CloseTutorial;
+        else
+            Debug.LogWarning("[UITutorialManager] TutorialNextButton not found.");
 
         HideTutorial();
     }
@@ -74,12 +78,17 @@ public class UITutorialManager : MonoBehaviour
         tutorialOpen = true;
         currentStepIndex = 0;
 
+        // Small delay so UI Toolkit layout is ready
         Invoke(nameof(ShowCurrentStep), 0.05f);
     }
 
     public void CloseTutorial()
     {
         tutorialOpen = false;
+
+        if (tutorialVideoPlayer != null && tutorialVideoPlayer.isPlaying)
+            tutorialVideoPlayer.Stop();
+
         HideTutorial();
     }
 
@@ -87,8 +96,8 @@ public class UITutorialManager : MonoBehaviour
     {
         if (tutorialOverlay != null) tutorialOverlay.style.display = DisplayStyle.None;
         if (tutorialHighlight != null) tutorialHighlight.style.display = DisplayStyle.None;
-        if (tutorialArrow != null) tutorialArrow.style.display = DisplayStyle.None;
         if (tutorialTextPanel != null) tutorialTextPanel.style.display = DisplayStyle.None;
+        if (tutorialNextButton != null) tutorialNextButton.style.display = DisplayStyle.None;
     }
 
     void ShowCurrentStep()
@@ -102,15 +111,68 @@ public class UITutorialManager : MonoBehaviour
             return;
         }
 
-        var step = steps[currentStepIndex];
+        UITutorialStep step = steps[currentStepIndex];
 
         if (tutorialOverlay != null) tutorialOverlay.style.display = DisplayStyle.Flex;
         if (tutorialHighlight != null) tutorialHighlight.style.display = DisplayStyle.Flex;
-        if (tutorialArrow != null) tutorialArrow.style.display = DisplayStyle.Flex;
         if (tutorialTextPanel != null) tutorialTextPanel.style.display = DisplayStyle.Flex;
+        if (tutorialNextButton != null) tutorialNextButton.style.display = DisplayStyle.Flex;
 
-        if (tutorialTitle != null) tutorialTitle.text = step.title;
-        if (tutorialBody != null) tutorialBody.text = step.description;
+        bool hasTitle = !string.IsNullOrWhiteSpace(step.title);
+        bool hasBody = !string.IsNullOrWhiteSpace(step.description);
+        bool hasAnyText = hasTitle || hasBody;
+
+        if (tutorialTitle != null)
+        {
+            tutorialTitle.text = hasTitle ? step.title : "";
+            tutorialTitle.style.display = hasTitle ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        if (tutorialBody != null)
+        {
+            tutorialBody.text = hasBody ? step.description : "";
+            tutorialBody.style.display = hasBody ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        if (tutorialMediaImage != null)
+        {
+            bool showingMedia = false;
+
+            if (step.tutorialVideo != null && tutorialVideoPlayer != null && tutorialRenderTexture != null)
+            {
+                tutorialVideoPlayer.Stop();
+                tutorialVideoPlayer.clip = step.tutorialVideo;
+                tutorialVideoPlayer.targetTexture = tutorialRenderTexture;
+                tutorialVideoPlayer.isLooping = true;
+                tutorialVideoPlayer.Play();
+
+                tutorialMediaImage.style.display = DisplayStyle.Flex;
+                tutorialMediaImage.style.backgroundImage =
+                    new StyleBackground(Background.FromRenderTexture(tutorialRenderTexture));
+                showingMedia = true;
+            }
+            else if (step.tutorialImage != null)
+            {
+                if (tutorialVideoPlayer != null && tutorialVideoPlayer.isPlaying)
+                    tutorialVideoPlayer.Stop();
+
+                tutorialMediaImage.style.display = DisplayStyle.Flex;
+                tutorialMediaImage.style.backgroundImage = new StyleBackground(step.tutorialImage);
+                showingMedia = true;
+            }
+            else
+            {
+                if (tutorialVideoPlayer != null && tutorialVideoPlayer.isPlaying)
+                    tutorialVideoPlayer.Stop();
+
+                tutorialMediaImage.style.backgroundImage = StyleKeyword.None;
+            }
+
+            if (!showingMedia)
+                tutorialMediaImage.style.display = DisplayStyle.None;
+        }
+
+        UpdatePanelLayout(hasAnyText);
 
         VisualElement target = root.Q<VisualElement>(step.targetElementName);
         if (target == null)
@@ -125,18 +187,32 @@ public class UITutorialManager : MonoBehaviour
             tutorialNextButton.text = (currentStepIndex >= steps.Count - 1) ? "Finish" : "Next";
     }
 
+    void UpdatePanelLayout(bool hasAnyText)
+    {
+        if (tutorialMediaImage == null)
+            return;
+
+        if (hasAnyText)
+        {
+            tutorialMediaImage.style.height = 90f;
+            tutorialMediaImage.style.flexGrow = 0f;
+        }
+        else
+        {
+            tutorialMediaImage.style.height = StyleKeyword.Auto;
+            tutorialMediaImage.style.flexGrow = 1f;
+        }
+    }
+
     void PositionTutorialElements(VisualElement target, UITutorialStep step)
     {
-        if (tutorialHighlight == null || tutorialArrow == null || tutorialTextPanel == null)
-        {
-            Debug.LogWarning("[UITutorialManager] Missing tutorial UI references.");
+        if (root == null || tutorialHighlight == null || tutorialTextPanel == null || tutorialNextButton == null)
             return;
-        }
 
         Rect r = target.worldBound;
         Rect rootRect = root.worldBound;
 
-        float padding = Mathf.Max(4f, step.padding);
+        float padding = Mathf.Max(8f, step.padding);
 
         float holeX = r.xMin - padding;
         float holeY = r.yMin - padding;
@@ -149,8 +225,7 @@ public class UITutorialManager : MonoBehaviour
         tutorialHighlight.style.height = holeH;
 
         PositionMasks(rootRect, holeX, holeY, holeW, holeH);
-        PositionArrow(r, rootRect, step);
-        PositionTextPanel(r, rootRect, step);
+        PositionTextPanel(rootRect);
         PositionNextButton(rootRect);
     }
 
@@ -161,7 +236,7 @@ public class UITutorialManager : MonoBehaviour
             tutorialMaskTop.style.left = 0;
             tutorialMaskTop.style.top = 0;
             tutorialMaskTop.style.width = rootRect.width;
-            tutorialMaskTop.style.height = holeY;
+            tutorialMaskTop.style.height = Mathf.Max(0f, holeY);
         }
 
         if (tutorialMaskBottom != null)
@@ -169,14 +244,14 @@ public class UITutorialManager : MonoBehaviour
             tutorialMaskBottom.style.left = 0;
             tutorialMaskBottom.style.top = holeY + holeH;
             tutorialMaskBottom.style.width = rootRect.width;
-            tutorialMaskBottom.style.height = Mathf.Max(0, rootRect.height - (holeY + holeH));
+            tutorialMaskBottom.style.height = Mathf.Max(0f, rootRect.height - (holeY + holeH));
         }
 
         if (tutorialMaskLeft != null)
         {
             tutorialMaskLeft.style.left = 0;
             tutorialMaskLeft.style.top = holeY;
-            tutorialMaskLeft.style.width = holeX;
+            tutorialMaskLeft.style.width = Mathf.Max(0f, holeX);
             tutorialMaskLeft.style.height = holeH;
         }
 
@@ -184,56 +259,24 @@ public class UITutorialManager : MonoBehaviour
         {
             tutorialMaskRight.style.left = holeX + holeW;
             tutorialMaskRight.style.top = holeY;
-            tutorialMaskRight.style.width = Mathf.Max(0, rootRect.width - (holeX + holeW));
+            tutorialMaskRight.style.width = Mathf.Max(0f, rootRect.width - (holeX + holeW));
             tutorialMaskRight.style.height = holeH;
         }
     }
 
-    void PositionArrow(Rect r, Rect rootRect, UITutorialStep step)
+    void PositionTextPanel(Rect rootRect)
     {
-        string arrowChar = "↓";
-        Vector2 arrowPos = new Vector2(r.center.x - 10f, r.yMin - 28f);
+        if (tutorialTextPanel == null)
+            return;
 
-        switch (step.arrowDirection)
-        {
-            case TutorialArrowDirection.Up:
-                arrowChar = "↑";
-                arrowPos = new Vector2(r.center.x - 10f, r.yMax + 2f);
-                break;
-
-            case TutorialArrowDirection.Down:
-                arrowChar = "↓";
-                arrowPos = new Vector2(r.center.x - 10f, r.yMin - 28f);
-                break;
-
-            case TutorialArrowDirection.Left:
-                arrowChar = "←";
-                arrowPos = new Vector2(r.xMax + 2f, r.center.y - 14f);
-                break;
-
-            case TutorialArrowDirection.Right:
-                arrowChar = "→";
-                arrowPos = new Vector2(r.xMin - 24f, r.center.y - 14f);
-                break;
-        }
-
-        arrowPos += step.arrowOffset;
-
-        tutorialArrow.text = arrowChar;
-        tutorialArrow.style.left = Mathf.Clamp(arrowPos.x, 0f, rootRect.width - 24f);
-        tutorialArrow.style.top = Mathf.Clamp(arrowPos.y, 0f, rootRect.height - 24f);
-    }
-
-    void PositionTextPanel(Rect r, Rect rootRect, UITutorialStep step)
-    {
-        float panelWidth = 220f;
-        float panelHeight = 110f;
+        float panelWidth = 300f;
+        float panelHeight = 210f;
 
         float x = (rootRect.width - panelWidth) * 0.5f;
         float y = (rootRect.height - panelHeight) * 0.5f;
 
         tutorialTextPanel.style.width = panelWidth;
-        tutorialTextPanel.style.minHeight = panelHeight;
+        tutorialTextPanel.style.height = panelHeight;
         tutorialTextPanel.style.left = x;
         tutorialTextPanel.style.top = y;
     }
@@ -243,8 +286,8 @@ public class UITutorialManager : MonoBehaviour
         if (tutorialNextButton == null)
             return;
 
-        float buttonWidth = 80f;
-        float buttonHeight = 30f;
+        float buttonWidth = 90f;
+        float buttonHeight = 32f;
 
         float x = rootRect.width - buttonWidth - 12f;
         float y = (rootRect.height - buttonHeight) * 0.5f;
@@ -258,7 +301,8 @@ public class UITutorialManager : MonoBehaviour
 
     public void NextStep()
     {
-        if (!tutorialOpen) return;
+        if (!tutorialOpen)
+            return;
 
         currentStepIndex++;
         ShowCurrentStep();

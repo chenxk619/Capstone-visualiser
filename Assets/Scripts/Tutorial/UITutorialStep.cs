@@ -11,13 +11,9 @@ public class UITutorialStep
 
     public string targetElementName;
 
-    public TutorialArrowDirection arrowDirection = TutorialArrowDirection.Down;
-
-    public Vector2 textPanelOffset = new Vector2(0, 0);
-    public Vector2 arrowOffset = new Vector2(0, 0);
     public float padding = 8f;
 
     [Header("Optional Media")]
-    public Sprite tutorialImage;
+    public Texture2D tutorialImage;
     public VideoClip tutorialVideo;
 }
