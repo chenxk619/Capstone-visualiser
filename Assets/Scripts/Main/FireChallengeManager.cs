@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections;
+using System.Collections.Generic;
 
 public class FireChallengeManager : MonoBehaviour
 {
@@ -10,6 +11,11 @@ public class FireChallengeManager : MonoBehaviour
 
     [Header("Fires (order: A, B, C, Electrical, F)")]
     public GameObject[] fires;
+
+    [Header("Electrical Fire Sweep Challenge")]
+    public int electricalFireIndex = 3; // Electrical fire
+    public GameObject[] electricalSweepFires = new GameObject[3]; // Left, Middle, Right
+    public float electricalSweepResetTime = 4f; // optional timeout to complete sweep
 
     [Header("Special Fire Burst - Class C")]
     public int burstFireIndex = 2; // Class C
@@ -55,6 +61,12 @@ public class FireChallengeManager : MonoBehaviour
     private bool classFDoorBreached = false;
     private bool waitingForClassFBreach = false;
     private Coroutine revealFireRoutine;
+
+    // Electrical sweep state
+    private bool[] electricalSubFireExtinguished = new bool[3];
+    private List<int> electricalSweepSequence = new List<int>();
+    private float electricalSweepTimer = 0f;
+    private bool electricalSweepStarted = false;
 
     public int CurrentFireIndex { get; private set; } = -1;
     public int ExtinguishedCount => extinguishedCount;
@@ -103,6 +115,16 @@ public class FireChallengeManager : MonoBehaviour
         {
             UpdateBurstAttack();
             return;
+        }
+
+        if (electricalSweepStarted)
+        {
+            electricalSweepTimer -= Time.deltaTime;
+            if (electricalSweepTimer <= 0f)
+            {
+                Debug.Log("[Challenge] Electrical sweep timed out. Resetting electrical sub-fires.");
+                ResetElectricalSweepProgress(false);
+            }
         }
 
         timeLeft -= Time.deltaTime;
@@ -169,6 +191,8 @@ public class FireChallengeManager : MonoBehaviour
         for (int i = 0; i < extinguishedFlags.Length; i++)
             extinguishedFlags[i] = false;
 
+        ResetElectricalSweepProgress(true);
+
         HideAllFires();
         HideFireBurst();
         HideBreachDoor();
@@ -232,6 +256,20 @@ public class FireChallengeManager : MonoBehaviour
             }
         }
 
+        // Electrical fire special handling
+        if (fireIndex == electricalFireIndex)
+        {
+            ShowElectricalSweepFires();
+
+            var extinguisherForElectrical = GetCurrentExtinguisherScript();
+            if (extinguisherForElectrical != null)
+                extinguisherForElectrical.ResetForNextFire(null, false);
+
+            UpdateElectricalUI();
+            Debug.Log("[Challenge] Electrical fire tracked. Player must sweep across 3 small fires.");
+            return;
+        }
+
         var extinguisher = GetCurrentExtinguisherScript();
         if (extinguisher != null)
             extinguisher.ResetForNextFire(fire, false);
@@ -268,6 +306,14 @@ public class FireChallengeManager : MonoBehaviour
         if (waitingForBurstBlock) return;
         if (extinguishedFire == null) return;
 
+        // Electrical fire sub-fire handling
+        int electricalSubIndex = GetElectricalSubFireIndex(extinguishedFire);
+        if (electricalSubIndex >= 0)
+        {
+            HandleElectricalSubFireExtinguished(electricalSubIndex, extinguishedFire);
+            return;
+        }
+
         int extinguishedFireIndex = GetFireIndex(extinguishedFire);
         if (extinguishedFireIndex < 0)
         {
@@ -299,6 +345,178 @@ public class FireChallengeManager : MonoBehaviour
         }
 
         CheckForWinOrContinue();
+    }
+
+    void HandleElectricalSubFireExtinguished(int subIndex, GameObject subFire)
+    {
+        if (IsFireAlreadyExtinguished(electricalFireIndex))
+            return;
+
+        if (subIndex < 0 || subIndex >= electricalSubFireExtinguished.Length)
+            return;
+
+        if (electricalSubFireExtinguished[subIndex])
+            return;
+
+        if (!electricalSweepStarted)
+        {
+            electricalSweepStarted = true;
+            electricalSweepTimer = electricalSweepResetTime;
+        }
+        else
+        {
+            electricalSweepTimer = electricalSweepResetTime;
+        }
+
+        electricalSubFireExtinguished[subIndex] = true;
+        electricalSweepSequence.Add(subIndex);
+
+        if (subFire != null)
+            subFire.SetActive(false);
+
+        Debug.Log($"[Challenge] Electrical sub-fire extinguished: {subIndex}. Sequence: {string.Join(",", electricalSweepSequence)}");
+
+        // Validate sweep direction progressively
+        if (!IsValidElectricalSweepSoFar())
+        {
+            Debug.Log("[Challenge] Electrical sweep order invalid. Resetting sub-fires.");
+            ResetElectricalSweepProgress(false);
+            UpdateElectricalUI();
+            return;
+        }
+
+        UpdateElectricalUI();
+
+        if (electricalSweepSequence.Count >= 3)
+        {
+            CompleteElectricalFire();
+        }
+    }
+
+    bool IsValidElectricalSweepSoFar()
+    {
+        // Valid full sweep orders:
+        // 0 -> 1 -> 2
+        // 2 -> 1 -> 0
+
+        if (electricalSweepSequence.Count == 0)
+            return true;
+
+        int first = electricalSweepSequence[0];
+        if (first != 0 && first != 2)
+            return false;
+
+        if (electricalSweepSequence.Count == 1)
+            return true;
+
+        int second = electricalSweepSequence[1];
+        if (second != 1)
+            return false;
+
+        if (electricalSweepSequence.Count == 2)
+            return true;
+
+        int third = electricalSweepSequence[2];
+        if (first == 0 && third == 2)
+            return true;
+        if (first == 2 && third == 0)
+            return true;
+
+        return false;
+    }
+
+    void CompleteElectricalFire()
+    {
+        if (IsFireAlreadyExtinguished(electricalFireIndex))
+            return;
+
+        extinguishedFlags[electricalFireIndex] = true;
+        extinguishedCount++;
+
+        MarkTrackedTargetExtinguished(electricalFireIndex);
+
+        if (CurrentFireIndex == electricalFireIndex)
+            CurrentFireIndex = -1;
+
+        UpdateFireExtinguishedUI();
+        UpdateFireNameUI("");
+
+        HideElectricalSweepFires();
+
+        Debug.Log("[Challenge] Electrical fire fully extinguished by sweeping motion.");
+
+        ResetElectricalSweepProgress(true);
+
+        CheckForWinOrContinue();
+    }
+
+    void ResetElectricalSweepProgress(bool hideObjects)
+    {
+        electricalSweepStarted = false;
+        electricalSweepTimer = 0f;
+        electricalSweepSequence.Clear();
+
+        if (electricalSubFireExtinguished == null || electricalSubFireExtinguished.Length != 3)
+            electricalSubFireExtinguished = new bool[3];
+
+        for (int i = 0; i < electricalSubFireExtinguished.Length; i++)
+            electricalSubFireExtinguished[i] = false;
+
+        if (electricalSweepFires != null)
+        {
+            for (int i = 0; i < electricalSweepFires.Length; i++)
+            {
+                if (electricalSweepFires[i] != null)
+                    electricalSweepFires[i].SetActive(!hideObjects);
+            }
+        }
+    }
+
+    void ShowElectricalSweepFires()
+    {
+        if (electricalSweepFires == null) return;
+
+        for (int i = 0; i < electricalSweepFires.Length; i++)
+        {
+            if (electricalSweepFires[i] != null && !electricalSubFireExtinguished[i])
+                electricalSweepFires[i].SetActive(true);
+        }
+    }
+
+    void HideElectricalSweepFires()
+    {
+        if (electricalSweepFires == null) return;
+
+        for (int i = 0; i < electricalSweepFires.Length; i++)
+        {
+            if (electricalSweepFires[i] != null)
+                electricalSweepFires[i].SetActive(false);
+        }
+    }
+
+    void UpdateElectricalUI()
+    {
+        int done = 0;
+        for (int i = 0; i < electricalSubFireExtinguished.Length; i++)
+        {
+            if (electricalSubFireExtinguished[i]) done++;
+        }
+
+        UpdateFireNameUI($"Electrical Fire: Sweep {done}/3");
+    }
+
+    int GetElectricalSubFireIndex(GameObject fireObject)
+    {
+        if (fireObject == null || electricalSweepFires == null)
+            return -1;
+
+        for (int i = 0; i < electricalSweepFires.Length; i++)
+        {
+            if (electricalSweepFires[i] == fireObject)
+                return i;
+        }
+
+        return -1;
     }
 
     void StartBurstBlockPhase(Vector3 spawnPosition)
@@ -536,6 +754,8 @@ public class FireChallengeManager : MonoBehaviour
 
         foreach (var f in fires)
             HideFire(f);
+
+        HideElectricalSweepFires();
     }
 
     void HideFire(GameObject fireRoot)
@@ -560,7 +780,6 @@ public class FireChallengeManager : MonoBehaviour
     {
         if (breachDoorObject == null) return;
 
-        // Disable all renderers too, in case animator/state keeps visuals around
         foreach (var r in breachDoorObject.GetComponentsInChildren<Renderer>(true))
             r.enabled = false;
 
@@ -627,6 +846,9 @@ public class FireChallengeManager : MonoBehaviour
 
     string GetDisplayFireName(int index, GameObject fire)
     {
+        if (index == electricalFireIndex)
+            return "Electrical Fire";
+
         return fire != null ? fire.name : $"Fire {index}";
     }
 

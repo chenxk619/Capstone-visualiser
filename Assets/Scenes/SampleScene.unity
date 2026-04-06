@@ -2763,14 +2763,14 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: classF
+  mTrackableName: fire_marker_F_v2
   mInitializedInEditor: 1
   mDataSetPath: 
-  mAspectRatio: 0.99649125
+  mAspectRatio: 1
   mImageTargetType: 3
   mWidth: 0.2
-  mHeight: 0.19929825
-  mRuntimeTexture: {fileID: 2800000, guid: 3da27335bb62b412b8e04fe2764a37df, type: 3}
+  mHeight: 0.2
+  mRuntimeTexture: {fileID: 2800000, guid: 3935f82265ded4d3fb4aa732416fb82e, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
@@ -2804,7 +2804,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 934194619}
   mHiddenRoot: {fileID: 0}
-  mTargetName: classF
+  mTargetName: fire_marker_F_v2
   mDatasetName: 
   mCastedBehaviour: {fileID: 934194619}
   mMeshFilter: {fileID: 0}
@@ -13320,14 +13320,14 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: classA
+  mTrackableName: fire_marker_A_v2
   mInitializedInEditor: 1
   mDataSetPath: 
-  mAspectRatio: 0.96830994
+  mAspectRatio: 1
   mImageTargetType: 3
-  mWidth: 0.2
-  mHeight: 0.19366199
-  mRuntimeTexture: {fileID: 2800000, guid: f1b1bb61d428e4d879d4a6645dd5d823, type: 3}
+  mWidth: 0.20000002
+  mHeight: 0.20000002
+  mRuntimeTexture: {fileID: 2800000, guid: c08f64551c31048fe833e3662b71205e, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
@@ -13361,7 +13361,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 1227781699}
   mHiddenRoot: {fileID: 0}
-  mTargetName: classA
+  mTargetName: fire_marker_A_v2
   mDatasetName: 
   mCastedBehaviour: {fileID: 1227781699}
   mMeshFilter: {fileID: 0}
@@ -13598,14 +13598,14 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: Electrical
+  mTrackableName: fire_marker_D_v2
   mInitializedInEditor: 1
   mDataSetPath: 
-  mAspectRatio: 1.0107143
+  mAspectRatio: 1
   mImageTargetType: 3
-  mWidth: 0.19787985
-  mHeight: 0.19999999
-  mRuntimeTexture: {fileID: 2800000, guid: 89919ae4c9ce24c8f9bf3af987750dc8, type: 3}
+  mWidth: 0.19999997
+  mHeight: 0.19999997
+  mRuntimeTexture: {fileID: 2800000, guid: abe41ffd69c2649ce919b2c98271f131, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
@@ -13639,7 +13639,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 1341332425}
   mHiddenRoot: {fileID: 0}
-  mTargetName: Electrical
+  mTargetName: fire_marker_D_v2
   mDatasetName: 
   mCastedBehaviour: {fileID: 1341332425}
   mMeshFilter: {fileID: 0}
@@ -20612,14 +20612,14 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: classC
+  mTrackableName: fire_marker_C_v2
   mInitializedInEditor: 1
   mDataSetPath: 
-  mAspectRatio: 0.975945
+  mAspectRatio: 1
   mImageTargetType: 3
   mWidth: 0.2
-  mHeight: 0.195189
-  mRuntimeTexture: {fileID: 2800000, guid: 9b1adf3f9a9e14d83b4d6ccb7d76b0dc, type: 3}
+  mHeight: 0.2
+  mRuntimeTexture: {fileID: 2800000, guid: 5379e447be84f44a0a13c0ba5b3dcf27, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
@@ -20653,7 +20653,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 2046898014}
   mHiddenRoot: {fileID: 0}
-  mTargetName: classC
+  mTargetName: fire_marker_C_v2
   mDatasetName: 
   mCastedBehaviour: {fileID: 2046898014}
   mMeshFilter: {fileID: 0}
@@ -20784,14 +20784,14 @@ MonoBehaviour:
   PreviewVisible: 1
   RuntimeOcclusion: 0
   RuntimeCollider: 0
-  mTrackableName: classB
+  mTrackableName: fire_marker_B_v2
   mInitializedInEditor: 1
   mDataSetPath: 
-  mAspectRatio: 0.9697987
+  mAspectRatio: 1
   mImageTargetType: 3
   mWidth: 0.2
-  mHeight: 0.19395974
-  mRuntimeTexture: {fileID: 2800000, guid: 0e62fd61f6bbf431cbc59e8aaac63c86, type: 3}
+  mHeight: 0.2
+  mRuntimeTexture: {fileID: 2800000, guid: 183423a5c115b44a398438e69ce91ca7, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
   mTrackingOptimizationNeedsUpgrade: 0
@@ -20825,7 +20825,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Vuforia.Unity.Engine.dll::Vuforia.ImageTargetPreview
   mObserverBehaviour: {fileID: 2058107545}
   mHiddenRoot: {fileID: 0}
-  mTargetName: classB
+  mTargetName: fire_marker_B_v2
   mDatasetName: 
   mCastedBehaviour: {fileID: 2058107545}
   mMeshFilter: {fileID: 0}
