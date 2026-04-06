@@ -76,8 +76,20 @@
 
 #TutorialNextButton {
     position: absolute;
-    width: 90px;
-    height: 32px;
-    font-size: 12px;
+    width: 170px;
+    height: 80px;
+    font-size: 10px;
+    color: white;
+    background-color: rgb(120, 120, 120);
+    display: none;
+}
+
+#TutorialPrevButton {
+    position: absolute;
+    width: 170px;
+    height: 80px;
+    font-size: 10px;
+    color: white;
+    background-color: rgb(120, 120, 120);
     display: none;
 }

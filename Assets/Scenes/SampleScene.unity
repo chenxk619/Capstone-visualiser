@@ -14251,6 +14251,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UITutorialManager
   uiDocument: {fileID: 1729673543}
+  startPanelCanvas: {fileID: 682316815}
   steps:
   - title: Fires Extinguished
     description: This shows how many fires you have extinguished so far. Extinguish

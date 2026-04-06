@@ -8,6 +8,9 @@ public class UITutorialManager : MonoBehaviour
     [Header("UI")]
     public UIDocument uiDocument;
 
+    [Header("Start Screen")]
+    public GameObject startPanelCanvas;
+
     [Header("Tutorial Steps")]
     public List<UITutorialStep> steps = new List<UITutorialStep>();
 
@@ -29,7 +32,9 @@ public class UITutorialManager : MonoBehaviour
     private Label tutorialTitle;
     private Label tutorialBody;
     private VisualElement tutorialMediaImage;
+
     private Button tutorialNextButton;
+    private Button tutorialPrevButton;
 
     private int currentStepIndex = 0;
     private bool tutorialOpen = false;
@@ -57,12 +62,19 @@ public class UITutorialManager : MonoBehaviour
         tutorialTitle = root.Q<Label>("TutorialTitle");
         tutorialBody = root.Q<Label>("TutorialBody");
         tutorialMediaImage = root.Q<VisualElement>("TutorialMediaImage");
+
         tutorialNextButton = root.Q<Button>("TutorialNextButton");
+        tutorialPrevButton = root.Q<Button>("TutorialPrevButton");
 
         if (tutorialNextButton != null)
             tutorialNextButton.clicked += NextStep;
         else
             Debug.LogWarning("[UITutorialManager] TutorialNextButton not found.");
+
+        if (tutorialPrevButton != null)
+            tutorialPrevButton.clicked += PrevStep;
+        else
+            Debug.LogWarning("[UITutorialManager] TutorialPrevButton not found.");
 
         HideTutorial();
     }
@@ -78,7 +90,9 @@ public class UITutorialManager : MonoBehaviour
         tutorialOpen = true;
         currentStepIndex = 0;
 
-        // Small delay so UI Toolkit layout is ready
+        if (startPanelCanvas != null)
+            startPanelCanvas.SetActive(false);
+
         Invoke(nameof(ShowCurrentStep), 0.05f);
     }
 
@@ -86,10 +100,18 @@ public class UITutorialManager : MonoBehaviour
     {
         tutorialOpen = false;
 
-        if (tutorialVideoPlayer != null && tutorialVideoPlayer.isPlaying)
-            tutorialVideoPlayer.Stop();
+        if (tutorialVideoPlayer != null)
+        {
+            tutorialVideoPlayer.prepareCompleted -= OnTutorialVideoPrepared;
+
+            if (tutorialVideoPlayer.isPlaying)
+                tutorialVideoPlayer.Stop();
+        }
 
         HideTutorial();
+
+        if (startPanelCanvas != null)
+            startPanelCanvas.SetActive(true);
     }
 
     void HideTutorial()
@@ -98,6 +120,7 @@ public class UITutorialManager : MonoBehaviour
         if (tutorialHighlight != null) tutorialHighlight.style.display = DisplayStyle.None;
         if (tutorialTextPanel != null) tutorialTextPanel.style.display = DisplayStyle.None;
         if (tutorialNextButton != null) tutorialNextButton.style.display = DisplayStyle.None;
+        if (tutorialPrevButton != null) tutorialPrevButton.style.display = DisplayStyle.None;
     }
 
     void ShowCurrentStep()
@@ -105,7 +128,10 @@ public class UITutorialManager : MonoBehaviour
         if (!tutorialOpen || steps == null || steps.Count == 0)
             return;
 
-        if (currentStepIndex < 0 || currentStepIndex >= steps.Count)
+        if (currentStepIndex < 0)
+            currentStepIndex = 0;
+
+        if (currentStepIndex >= steps.Count)
         {
             CloseTutorial();
             return;
@@ -117,6 +143,7 @@ public class UITutorialManager : MonoBehaviour
         if (tutorialHighlight != null) tutorialHighlight.style.display = DisplayStyle.Flex;
         if (tutorialTextPanel != null) tutorialTextPanel.style.display = DisplayStyle.Flex;
         if (tutorialNextButton != null) tutorialNextButton.style.display = DisplayStyle.Flex;
+        if (tutorialPrevButton != null) tutorialPrevButton.style.display = DisplayStyle.Flex;
 
         bool hasTitle = !string.IsNullOrWhiteSpace(step.title);
         bool hasBody = !string.IsNullOrWhiteSpace(step.description);
@@ -142,19 +169,29 @@ public class UITutorialManager : MonoBehaviour
             {
                 tutorialVideoPlayer.Stop();
                 tutorialVideoPlayer.clip = step.tutorialVideo;
+                tutorialVideoPlayer.renderMode = VideoRenderMode.RenderTexture;
                 tutorialVideoPlayer.targetTexture = tutorialRenderTexture;
                 tutorialVideoPlayer.isLooping = true;
-                tutorialVideoPlayer.Play();
+                tutorialVideoPlayer.waitForFirstFrame = true;
+
+                tutorialVideoPlayer.prepareCompleted -= OnTutorialVideoPrepared;
+                tutorialVideoPlayer.prepareCompleted += OnTutorialVideoPrepared;
+                tutorialVideoPlayer.Prepare();
 
                 tutorialMediaImage.style.display = DisplayStyle.Flex;
                 tutorialMediaImage.style.backgroundImage =
                     new StyleBackground(Background.FromRenderTexture(tutorialRenderTexture));
+
                 showingMedia = true;
             }
             else if (step.tutorialImage != null)
             {
-                if (tutorialVideoPlayer != null && tutorialVideoPlayer.isPlaying)
-                    tutorialVideoPlayer.Stop();
+                if (tutorialVideoPlayer != null)
+                {
+                    tutorialVideoPlayer.prepareCompleted -= OnTutorialVideoPrepared;
+                    if (tutorialVideoPlayer.isPlaying)
+                        tutorialVideoPlayer.Stop();
+                }
 
                 tutorialMediaImage.style.display = DisplayStyle.Flex;
                 tutorialMediaImage.style.backgroundImage = new StyleBackground(step.tutorialImage);
@@ -162,8 +199,12 @@ public class UITutorialManager : MonoBehaviour
             }
             else
             {
-                if (tutorialVideoPlayer != null && tutorialVideoPlayer.isPlaying)
-                    tutorialVideoPlayer.Stop();
+                if (tutorialVideoPlayer != null)
+                {
+                    tutorialVideoPlayer.prepareCompleted -= OnTutorialVideoPrepared;
+                    if (tutorialVideoPlayer.isPlaying)
+                        tutorialVideoPlayer.Stop();
+                }
 
                 tutorialMediaImage.style.backgroundImage = StyleKeyword.None;
             }
@@ -184,7 +225,13 @@ public class UITutorialManager : MonoBehaviour
         PositionTutorialElements(target, step);
 
         if (tutorialNextButton != null)
-            tutorialNextButton.text = (currentStepIndex >= steps.Count - 1) ? "Finish" : "Next";
+            tutorialNextButton.text = "";
+
+        if (tutorialPrevButton != null)
+        {
+            tutorialPrevButton.text = "";
+            tutorialPrevButton.SetEnabled(currentStepIndex > 0);
+        }
     }
 
     void UpdatePanelLayout(bool hasAnyText)
@@ -227,6 +274,7 @@ public class UITutorialManager : MonoBehaviour
         PositionMasks(rootRect, holeX, holeY, holeW, holeH);
         PositionTextPanel(rootRect);
         PositionNextButton(rootRect);
+        PositionPrevButton(rootRect);
     }
 
     void PositionMasks(Rect rootRect, float holeX, float holeY, float holeW, float holeH)
@@ -286,8 +334,8 @@ public class UITutorialManager : MonoBehaviour
         if (tutorialNextButton == null)
             return;
 
-        float buttonWidth = 90f;
-        float buttonHeight = 32f;
+        float buttonWidth = 130f;
+        float buttonHeight = 60f;
 
         float x = rootRect.width - buttonWidth - 12f;
         float y = (rootRect.height - buttonHeight) * 0.5f;
@@ -299,12 +347,47 @@ public class UITutorialManager : MonoBehaviour
         tutorialNextButton.style.top = y;
     }
 
+    void PositionPrevButton(Rect rootRect)
+    {
+        if (tutorialPrevButton == null)
+            return;
+
+        float buttonWidth = 130f;
+        float buttonHeight = 60f;
+
+        float x = 12f;
+        float y = (rootRect.height - buttonHeight) * 0.5f;
+
+        tutorialPrevButton.style.position = Position.Absolute;
+        tutorialPrevButton.style.width = buttonWidth;
+        tutorialPrevButton.style.height = buttonHeight;
+        tutorialPrevButton.style.left = x;
+        tutorialPrevButton.style.top = y;
+    }
+
+    void OnTutorialVideoPrepared(VideoPlayer vp)
+    {
+        vp.Play();
+    }
+
     public void NextStep()
     {
         if (!tutorialOpen)
             return;
 
         currentStepIndex++;
+        ShowCurrentStep();
+    }
+
+    public void PrevStep()
+    {
+        if (!tutorialOpen)
+            return;
+
+        currentStepIndex--;
+        if (currentStepIndex < 0)
+            currentStepIndex = 0;
+
         ShowCurrentStep();
     }
 }
