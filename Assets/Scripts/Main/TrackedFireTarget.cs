@@ -22,6 +22,8 @@ public class TrackedFireTarget : MonoBehaviour
 
         if (observer != null)
             observer.OnTargetStatusChanged += OnTargetStatusChanged;
+        else
+            Debug.LogWarning($"[TrackedFireTarget] No ObserverBehaviour found on {gameObject.name}");
     }
 
     void OnDestroy()
@@ -32,6 +34,7 @@ public class TrackedFireTarget : MonoBehaviour
 
     void OnTargetStatusChanged(ObserverBehaviour behaviour, TargetStatus status)
     {
+        // Use only TRACKED so fire disappears immediately when QR is lost
         bool tracked = status.Status == Status.TRACKED;
 
         if (fireObject != null)

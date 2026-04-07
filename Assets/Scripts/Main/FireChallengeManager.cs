@@ -15,7 +15,7 @@ public class FireChallengeManager : MonoBehaviour
     [Header("Electrical Fire Sweep Challenge")]
     public int electricalFireIndex = 3; // Electrical fire
     public GameObject[] electricalSweepFires = new GameObject[3]; // Left, Middle, Right
-    public float electricalSweepResetTime = 4f; // optional timeout to complete sweep
+    public float electricalSweepResetTime = 4f;
 
     [Header("Special Fire Burst - Class C")]
     public int burstFireIndex = 2; // Class C
@@ -51,7 +51,6 @@ public class FireChallengeManager : MonoBehaviour
     private bool running = false;
     private int extinguishedCount = 0;
 
-    private bool winTriggered = false;
     private bool[] extinguishedFlags;
 
     private bool waitingForBurstBlock = false;
@@ -122,8 +121,9 @@ public class FireChallengeManager : MonoBehaviour
             electricalSweepTimer -= Time.deltaTime;
             if (electricalSweepTimer <= 0f)
             {
-                Debug.Log("[Challenge] Electrical sweep timed out. Resetting electrical sub-fires.");
+                Debug.Log("[Challenge] Electrical sweep timed out. Resetting.");
                 ResetElectricalSweepProgress(false);
+                UpdateElectricalUI();
             }
         }
 
@@ -168,7 +168,6 @@ public class FireChallengeManager : MonoBehaviour
         extinguishedCount = 0;
         timeLeft = timeLimitSeconds;
         running = false;
-        winTriggered = false;
 
         waitingForBurstBlock = false;
         burstTimer = 0f;
@@ -226,7 +225,7 @@ public class FireChallengeManager : MonoBehaviour
 
         CurrentFireIndex = fireIndex;
 
-        // Special Class F logic: show door first, hide fire until breached
+        // Class F: show door first
         if (fireIndex == breachFireIndex)
         {
             if (!classFDoorBreached)
@@ -243,8 +242,7 @@ public class FireChallengeManager : MonoBehaviour
                     extinguisherForDoor.ResetForNextFire(null, false);
 
                 UpdateFireNameUI("Breach Door");
-
-                Debug.Log("[Challenge] Class F target tracked. Waiting for breach.");
+                Debug.Log("[Challenge] Class F tracked. Waiting for breach.");
                 return;
             }
             else
@@ -259,6 +257,9 @@ public class FireChallengeManager : MonoBehaviour
         // Electrical fire special handling
         if (fireIndex == electricalFireIndex)
         {
+            if (fire != null)
+                fire.SetActive(true);
+
             ShowElectricalSweepFires();
 
             var extinguisherForElectrical = GetCurrentExtinguisherScript();
@@ -266,7 +267,7 @@ public class FireChallengeManager : MonoBehaviour
                 extinguisherForElectrical.ResetForNextFire(null, false);
 
             UpdateElectricalUI();
-            Debug.Log("[Challenge] Electrical fire tracked. Player must sweep across 3 small fires.");
+            Debug.Log("[Challenge] Electrical fire tracked.");
             return;
         }
 
@@ -275,7 +276,6 @@ public class FireChallengeManager : MonoBehaviour
             extinguisher.ResetForNextFire(fire, false);
 
         UpdateFireNameUI(GetDisplayFireName(fireIndex, fire));
-
         Debug.Log($"[Challenge] Tracking fire index {fireIndex}: {GetDisplayFireName(fireIndex, fire)}");
     }
 
@@ -289,6 +289,11 @@ public class FireChallengeManager : MonoBehaviour
         {
             waitingForClassFBreach = false;
             HideBreachDoor();
+        }
+
+        if (fireIndex == electricalFireIndex)
+        {
+            HideElectricalSweepFires();
         }
 
         var extinguisher = GetCurrentExtinguisherScript();
@@ -306,7 +311,6 @@ public class FireChallengeManager : MonoBehaviour
         if (waitingForBurstBlock) return;
         if (extinguishedFire == null) return;
 
-        // Electrical fire sub-fire handling
         int electricalSubIndex = GetElectricalSubFireIndex(extinguishedFire);
         if (electricalSubIndex >= 0)
         {
@@ -359,14 +363,9 @@ public class FireChallengeManager : MonoBehaviour
             return;
 
         if (!electricalSweepStarted)
-        {
             electricalSweepStarted = true;
-            electricalSweepTimer = electricalSweepResetTime;
-        }
-        else
-        {
-            electricalSweepTimer = electricalSweepResetTime;
-        }
+
+        electricalSweepTimer = electricalSweepResetTime;
 
         electricalSubFireExtinguished[subIndex] = true;
         electricalSweepSequence.Add(subIndex);
@@ -376,10 +375,9 @@ public class FireChallengeManager : MonoBehaviour
 
         Debug.Log($"[Challenge] Electrical sub-fire extinguished: {subIndex}. Sequence: {string.Join(",", electricalSweepSequence)}");
 
-        // Validate sweep direction progressively
         if (!IsValidElectricalSweepSoFar())
         {
-            Debug.Log("[Challenge] Electrical sweep order invalid. Resetting sub-fires.");
+            Debug.Log("[Challenge] Invalid electrical sweep. Resetting.");
             ResetElectricalSweepProgress(false);
             UpdateElectricalUI();
             return;
@@ -388,17 +386,11 @@ public class FireChallengeManager : MonoBehaviour
         UpdateElectricalUI();
 
         if (electricalSweepSequence.Count >= 3)
-        {
             CompleteElectricalFire();
-        }
     }
 
     bool IsValidElectricalSweepSoFar()
     {
-        // Valid full sweep orders:
-        // 0 -> 1 -> 2
-        // 2 -> 1 -> 0
-
         if (electricalSweepSequence.Count == 0)
             return true;
 
@@ -417,10 +409,8 @@ public class FireChallengeManager : MonoBehaviour
             return true;
 
         int third = electricalSweepSequence[2];
-        if (first == 0 && third == 2)
-            return true;
-        if (first == 2 && third == 0)
-            return true;
+        if (first == 0 && third == 2) return true;
+        if (first == 2 && third == 0) return true;
 
         return false;
     }
@@ -442,10 +432,9 @@ public class FireChallengeManager : MonoBehaviour
         UpdateFireNameUI("");
 
         HideElectricalSweepFires();
-
-        Debug.Log("[Challenge] Electrical fire fully extinguished by sweeping motion.");
-
         ResetElectricalSweepProgress(true);
+
+        Debug.Log("[Challenge] Electrical fire fully extinguished.");
 
         CheckForWinOrContinue();
     }
@@ -479,7 +468,17 @@ public class FireChallengeManager : MonoBehaviour
         for (int i = 0; i < electricalSweepFires.Length; i++)
         {
             if (electricalSweepFires[i] != null && !electricalSubFireExtinguished[i])
+            {
                 electricalSweepFires[i].SetActive(true);
+
+                var particles = electricalSweepFires[i].GetComponentsInChildren<ParticleSystem>(true);
+                foreach (var ps in particles)
+                {
+                    ps.gameObject.SetActive(true);
+                    ps.Clear(true);
+                    ps.Play(true);
+                }
+            }
         }
     }
 
@@ -490,7 +489,15 @@ public class FireChallengeManager : MonoBehaviour
         for (int i = 0; i < electricalSweepFires.Length; i++)
         {
             if (electricalSweepFires[i] != null)
+            {
+                var particles = electricalSweepFires[i].GetComponentsInChildren<ParticleSystem>(true);
+                foreach (var ps in particles)
+                {
+                    ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                }
+
                 electricalSweepFires[i].SetActive(false);
+            }
         }
     }
 
@@ -502,7 +509,7 @@ public class FireChallengeManager : MonoBehaviour
             if (electricalSubFireExtinguished[i]) done++;
         }
 
-        UpdateFireNameUI($"Electrical Fire: Sweep {done}/3");
+        UpdateFireNameUI($"Electrical Fire:\nSweep {done}/3");
     }
 
     int GetElectricalSubFireIndex(GameObject fireObject)
@@ -523,7 +530,7 @@ public class FireChallengeManager : MonoBehaviour
     {
         if (fireBurstObject == null || burstTargetCamera == null)
         {
-            Debug.LogWarning("[Challenge] Fire burst object or burst target camera is missing.");
+            Debug.LogWarning("[Challenge] Fire burst object or target camera missing.");
             CheckForWinOrContinue();
             return;
         }
@@ -540,7 +547,7 @@ public class FireChallengeManager : MonoBehaviour
         ShowFireBurst();
         UpdateFireNameUI($"BLOCK! {Mathf.CeilToInt(burstTimer)}");
 
-        Debug.Log("[Challenge] Class C extinguished -> Fire burst triggered. 10 seconds to block.");
+        Debug.Log("[Challenge] Class C extinguished -> burst triggered.");
     }
 
     void UpdateBurstAttack()
@@ -569,7 +576,7 @@ public class FireChallengeManager : MonoBehaviour
             running = false;
 
             UpdateFireNameUI("Burned");
-            Debug.Log("[Challenge] Player failed to block the fire burst. Lose.");
+            Debug.Log("[Challenge] Player failed to block. Lose.");
 
             if (uiManager != null)
                 uiManager.ShowLose();
@@ -588,7 +595,7 @@ public class FireChallengeManager : MonoBehaviour
         HideFireBurst();
         UpdateFireNameUI("");
 
-        Debug.Log("[Challenge] Fire burst blocked successfully.");
+        Debug.Log("[Challenge] Fire burst blocked.");
 
         CheckForWinOrContinue();
     }
@@ -599,19 +606,19 @@ public class FireChallengeManager : MonoBehaviour
 
         if (!running)
         {
-            Debug.LogWarning("[Challenge] ExecuteBreach ignored: challenge is not running.");
+            Debug.LogWarning("[Challenge] ExecuteBreach ignored: not running.");
             return;
         }
 
         if (!waitingForClassFBreach)
         {
-            Debug.LogWarning("[Challenge] ExecuteBreach ignored: not waiting for Class F breach.");
+            Debug.LogWarning("[Challenge] ExecuteBreach ignored: not waiting for breach.");
             return;
         }
 
         if (classFDoorBreached)
         {
-            Debug.LogWarning("[Challenge] ExecuteBreach ignored: door already breached.");
+            Debug.LogWarning("[Challenge] ExecuteBreach ignored: already breached.");
             return;
         }
 
@@ -622,13 +629,9 @@ public class FireChallengeManager : MonoBehaviour
         Debug.Log("[Challenge] Class F breach triggered.");
 
         if (breachDoorController != null)
-        {
             breachDoorController.BreachDoor();
-        }
         else
-        {
             Debug.LogWarning("[Challenge] No breachDoorController assigned.");
-        }
 
         if (revealFireRoutine != null)
             StopCoroutine(revealFireRoutine);
@@ -644,7 +647,7 @@ public class FireChallengeManager : MonoBehaviour
 
         if (fires == null || breachFireIndex < 0 || breachFireIndex >= fires.Length)
         {
-            Debug.LogWarning("[Challenge] Class F fire index is invalid.");
+            Debug.LogWarning("[Challenge] Class F fire index invalid.");
             revealFireRoutine = null;
             yield break;
         }
@@ -652,7 +655,7 @@ public class FireChallengeManager : MonoBehaviour
         GameObject classFFire = fires[breachFireIndex];
         if (classFFire == null)
         {
-            Debug.LogWarning("[Challenge] Class F fire reference is missing.");
+            Debug.LogWarning("[Challenge] Class F fire reference missing.");
             revealFireRoutine = null;
             yield break;
         }
@@ -667,7 +670,7 @@ public class FireChallengeManager : MonoBehaviour
 
         UpdateFireNameUI(GetDisplayFireName(breachFireIndex, classFFire));
 
-        Debug.Log("[Challenge] Class F fire revealed after breach.");
+        Debug.Log("[Challenge] Class F fire revealed.");
 
         revealFireRoutine = null;
     }
@@ -750,10 +753,11 @@ public class FireChallengeManager : MonoBehaviour
 
     void HideAllFires()
     {
-        if (fires == null) return;
-
-        foreach (var f in fires)
-            HideFire(f);
+        if (fires != null)
+        {
+            foreach (var f in fires)
+                HideFire(f);
+        }
 
         HideElectricalSweepFires();
     }
