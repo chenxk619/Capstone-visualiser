@@ -33,13 +33,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     public float normalExtinguishDistance = 2f;
     public float pressureExtinguishDistance = 4f;
 
-    [Header("Current Fire Root")]
-    public GameObject fireRoot;
-    public bool hideRenderersOnly = false;
-
-    [Header("Drag all extinguisher model roots here")]
-    public GameObject[] extinguisherModels;
-
     [Header("Debug Overlay")]
     public bool showDebug = true;
 
@@ -85,10 +78,9 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     private float timer = 0f;
     private bool pressedNow = false;
     private bool hitNow = false;
-    private bool extinguished = false;
 
-    // For electrical mini-fire tracking
-    private ElectricalSubFire currentElectricalTarget = null;
+    // generalized mini-fire tracking
+    private MiniFireUnit currentMiniTarget = null;
 
     void Start()
     {
@@ -96,7 +88,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (!arCamera) arCamera = Camera.main;
 
         ApplySprayModeSettings();
-
         fuel = maxFuel;
 
         if (uiDocument != null)
@@ -163,20 +154,13 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             return;
         }
 
-        if (extinguished)
-        {
-            ForceStopSpray();
-            UpdateRangeUI("");
-            return;
-        }
-
         pressedNow = IsPressed() && isPinPulled;
 
         if (!pressedNow)
         {
             UpdateRangeUI("");
             timer = 0f;
-            currentElectricalTarget = null;
+            currentMiniTarget = null;
         }
 
         if (enableFuel && fuel <= 0f)
@@ -227,7 +211,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         }
 
         UpdateFuelUI();
-
         hitNow = false;
 
         if (pressedNow)
@@ -245,49 +228,35 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 {
                     if (IsCorrectExtinguisherForCurrentFire())
                     {
-                        ElectricalSubFire electricalSubFire = hit.collider.GetComponentInParent<ElectricalSubFire>();
+                        MiniFireUnit miniFire = hit.collider.GetComponentInParent<MiniFireUnit>();
 
-                        // Special electrical mini-fire logic
-                        if (electricalSubFire != null &&
-                            challengeManager != null &&
-                            challengeManager.CurrentFireIndex == challengeManager.electricalFireIndex)
+                        if (miniFire != null)
                         {
                             hitNow = true;
                             UpdateRangeUI("In Range");
 
-                            if (currentElectricalTarget != electricalSubFire)
+                            if (currentMiniTarget != miniFire)
                             {
-                                currentElectricalTarget = electricalSubFire;
+                                currentMiniTarget = miniFire;
                                 timer = 0f;
                             }
-
-                            timer += Time.deltaTime;
-
-                            if (timer >= extinguishTime)
-                            {
-                                timer = 0f;
-                                bool started = challengeManager.TryStartElectricalSubFireExtinguish(electricalSubFire.gameObject);
-                                if (started)
-                                {
-                                    currentElectricalTarget = null;
-                                }
-                            }
-
-                            return;
                         }
-
-                        // Normal fire logic
-                        hitNow = true;
-                        UpdateRangeUI("In Range");
+                        else
+                        {
+                            hitNow = false;
+                            timer = 0f;
+                            currentMiniTarget = null;
+                            UpdateRangeUI("Missed");
+                        }
                     }
                     else
                     {
                         hitNow = false;
                         timer = 0f;
-                        currentElectricalTarget = null;
+                        currentMiniTarget = null;
                         UpdateRangeUI(wrongTypeText);
 
-                        if (showWrongTypeLogs)
+                        if (showWrongTypeLogs && challengeManager != null)
                         {
                             Debug.Log($"[{gameObject.name}] Wrong extinguisher type for current fire index {challengeManager.CurrentFireIndex}.");
                         }
@@ -297,7 +266,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 {
                     hitNow = false;
                     timer = 0f;
-                    currentElectricalTarget = null;
+                    currentMiniTarget = null;
                     UpdateRangeUI("Out of Range");
                 }
             }
@@ -305,7 +274,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             {
                 hitNow = false;
                 timer = 0f;
-                currentElectricalTarget = null;
+                currentMiniTarget = null;
                 UpdateRangeUI("Missed");
 
                 if (showDebug)
@@ -313,22 +282,24 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             }
         }
 
-        if (hitNow)
+        if (hitNow && currentMiniTarget != null)
         {
-            // For normal fires only
-            if (!(currentElectricalTarget != null &&
-                  challengeManager != null &&
-                  challengeManager.CurrentFireIndex == challengeManager.electricalFireIndex))
-            {
-                timer += Time.deltaTime;
+            timer += Time.deltaTime;
 
-                if (timer >= extinguishTime)
-                    Extinguish();
+            if (timer >= extinguishTime)
+            {
+                timer = 0f;
+
+                if (challengeManager != null)
+                    challengeManager.TryStartMiniFireExtinguish(currentMiniTarget);
+
+                currentMiniTarget = null;
             }
         }
         else
         {
-            timer = 0f;
+            if (!pressedNow)
+                timer = 0f;
         }
     }
 
@@ -365,67 +336,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         return extinguisherSwitcher.CanCurrentExtinguisherPutOutFire(requiredFireIndex);
     }
 
-    void Extinguish()
-    {
-        extinguished = true;
-        timer = 0f;
-        hitNow = false;
-        pressedNow = false;
-        currentElectricalTarget = null;
-
-        GameObject extinguishedFire = fireRoot;
-
-        if (spray)
-            spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
-        UpdateRangeUI("");
-        HideCurrentFire();
-
-        inputLockTimer = inputLockAfterWin;
-
-        if (challengeManager != null)
-            challengeManager.OnFireExtinguished(extinguishedFire);
-        else if (uiManager != null)
-            uiManager.ShowWin();
-    }
-
-    void HideCurrentFire()
-    {
-        if (!fireRoot) return;
-
-        if (hideRenderersOnly)
-        {
-            foreach (var r in fireRoot.GetComponentsInChildren<Renderer>(true))
-                r.enabled = false;
-        }
-        else
-        {
-            fireRoot.SetActive(false);
-        }
-    }
-
-    void ShowCurrentFire()
-    {
-        if (!fireRoot) return;
-
-        if (hideRenderersOnly)
-        {
-            foreach (var r in fireRoot.GetComponentsInChildren<Renderer>(true))
-                r.enabled = true;
-        }
-        else
-        {
-            fireRoot.SetActive(true);
-        }
-    }
-
     public void ResetGame()
     {
         timer = 0f;
-        extinguished = false;
         hitNow = false;
         pressedNow = false;
-        currentElectricalTarget = null;
+        currentMiniTarget = null;
 
         fuel = maxFuel;
         isPinPulled = false;
@@ -437,8 +353,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
-        ShowCurrentFire();
 
         inputLockTimer = inputLockAfterRestart;
     }
@@ -467,7 +381,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     {
         pressedNow = false;
         commsSprayHeld = false;
-        currentElectricalTarget = null;
+        currentMiniTarget = null;
 
         if (spray && (spray.isPlaying || spray.isEmitting))
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -486,12 +400,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     public void ResetForNextFire(GameObject newFireRoot, bool refillFuel)
     {
         timer = 0f;
-        extinguished = false;
         hitNow = false;
         pressedNow = false;
         commsSprayHeld = false;
         isPinPulled = false;
-        currentElectricalTarget = null;
+        currentMiniTarget = null;
 
         if (refillFuel)
         {
@@ -504,12 +417,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
-        if (newFireRoot != null)
-            fireRoot = newFireRoot;
-
-        ShowCurrentFire();
         RefreshPinButtonText();
-
         inputLockTimer = inputLockAfterRestart;
     }
 

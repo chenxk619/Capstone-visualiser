@@ -1,15 +1,15 @@
 using UnityEngine;
 
-public class ElectricalFireSweepLayout : MonoBehaviour
+public class FireSweepLayout : MonoBehaviour
 {
     [Header("Assign in Left -> Middle -> Right order")]
-    public GameObject[] smallFires = new GameObject[3];
+    public GameObject[] miniFires = new GameObject[3];
 
     [Header("Layout")]
     public float scaleMultiplier = 0.5f;
     public float spacing = 0.35f;
 
-    [Header("Optional vertical offset")]
+    [Header("Optional Offset")]
     public float yOffset = 0f;
     public float zOffset = 0f;
 
@@ -27,21 +27,21 @@ public class ElectricalFireSweepLayout : MonoBehaviour
 
     public void ApplyLayout()
     {
-        if (smallFires == null || smallFires.Length == 0)
+        if (miniFires == null || miniFires.Length == 0)
             return;
 
-        for (int i = 0; i < smallFires.Length; i++)
+        for (int i = 0; i < miniFires.Length; i++)
         {
-            if (smallFires[i] == null)
+            if (miniFires[i] == null)
                 continue;
 
-            Transform t = smallFires[i].transform;
+            Transform t = miniFires[i].transform;
 
             t.localScale = Vector3.one * scaleMultiplier;
 
             float x = 0f;
 
-            if (smallFires.Length == 3)
+            if (miniFires.Length == 3)
             {
                 if (i == 0) x = -spacing;
                 else if (i == 1) x = 0f;
@@ -49,18 +49,11 @@ public class ElectricalFireSweepLayout : MonoBehaviour
             }
             else
             {
-                float centeredIndex = i - (smallFires.Length - 1) * 0.5f;
+                float centeredIndex = i - (miniFires.Length - 1) * 0.5f;
                 x = centeredIndex * spacing;
             }
 
             t.localPosition = new Vector3(x, yOffset, zOffset);
-
-            ElectricalSubFire subFire = smallFires[i].GetComponent<ElectricalSubFire>();
-            if (subFire != null)
-            {
-                // force refresh of stored visible scale in editor/runtime
-                // by disabling and re-enabling scale memory via SendMessage alternative not needed
-            }
         }
     }
 }
