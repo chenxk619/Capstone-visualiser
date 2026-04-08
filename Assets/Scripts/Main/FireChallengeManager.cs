@@ -415,7 +415,7 @@ public class FireChallengeManager : MonoBehaviour
 
         float distToCamera = Vector3.Distance(fireBurstObject.transform.position, burstTargetCamera.position);
 
-        if (burstTimer <= 0f || distToCamera <= burstStopDistance)
+        if (burstTimer <= 0f)
         {
             if (cheatMode)
             {
