@@ -13,19 +13,19 @@ public class FireChallengeManager : MonoBehaviour
     public GameObject[] fires;
 
     [Header("Electrical Fire Sweep Challenge")]
-    public int electricalFireIndex = 3; // Electrical fire
+    public int electricalFireIndex = 3;
     public GameObject[] electricalSweepFires = new GameObject[3]; // Left, Middle, Right
     public float electricalSweepResetTime = 4f;
 
     [Header("Special Fire Burst - Class C")]
-    public int burstFireIndex = 2; // Class C
+    public int burstFireIndex = 2;
     public GameObject fireBurstObject;
     public Transform burstTargetCamera;
     public float burstBlockTimeLimit = 10f;
     public float burstStopDistance = 0.5f;
 
     [Header("Special Door Breach - Class F")]
-    public int breachFireIndex = 4; // Class F
+    public int breachFireIndex = 4;
     public GameObject breachDoorObject;
     public DoorBreachController breachDoorController;
     public float revealFireDelayAfterBreach = 2f;
@@ -63,6 +63,7 @@ public class FireChallengeManager : MonoBehaviour
 
     // Electrical sweep state
     private bool[] electricalSubFireExtinguished = new bool[3];
+    private bool[] electricalSubFireExtinguishing = new bool[3];
     private List<int> electricalSweepSequence = new List<int>();
     private float electricalSweepTimer = 0f;
     private bool electricalSweepStarted = false;
@@ -311,13 +312,6 @@ public class FireChallengeManager : MonoBehaviour
         if (waitingForBurstBlock) return;
         if (extinguishedFire == null) return;
 
-        int electricalSubIndex = GetElectricalSubFireIndex(extinguishedFire);
-        if (electricalSubIndex >= 0)
-        {
-            HandleElectricalSubFireExtinguished(electricalSubIndex, extinguishedFire);
-            return;
-        }
-
         int extinguishedFireIndex = GetFireIndex(extinguishedFire);
         if (extinguishedFireIndex < 0)
         {
@@ -351,7 +345,37 @@ public class FireChallengeManager : MonoBehaviour
         CheckForWinOrContinue();
     }
 
-    void HandleElectricalSubFireExtinguished(int subIndex, GameObject subFire)
+    // =========================================================
+    // ELECTRICAL SUB-FIRE FLOW
+    // =========================================================
+
+    public bool TryStartElectricalSubFireExtinguish(GameObject subFireObject)
+    {
+        if (!running) return false;
+        if (CurrentFireIndex != electricalFireIndex) return false;
+        if (IsFireAlreadyExtinguished(electricalFireIndex)) return false;
+        if (subFireObject == null) return false;
+
+        int subIndex = GetElectricalSubFireIndex(subFireObject);
+        if (subIndex < 0) return false;
+        if (subIndex >= electricalSubFireExtinguished.Length) return false;
+
+        if (electricalSubFireExtinguished[subIndex] || electricalSubFireExtinguishing[subIndex])
+            return false;
+
+        ElectricalSubFire subFire = subFireObject.GetComponent<ElectricalSubFire>();
+        if (subFire == null)
+        {
+            Debug.LogWarning($"[Challenge] Missing ElectricalSubFire on {subFireObject.name}");
+            return false;
+        }
+
+        electricalSubFireExtinguishing[subIndex] = true;
+        subFire.StartShrinkAndExtinguish();
+        return true;
+    }
+
+    public void OnElectricalSubFireFullyExtinguished(int subIndex, GameObject subFire)
     {
         if (IsFireAlreadyExtinguished(electricalFireIndex))
             return;
@@ -362,16 +386,14 @@ public class FireChallengeManager : MonoBehaviour
         if (electricalSubFireExtinguished[subIndex])
             return;
 
+        electricalSubFireExtinguishing[subIndex] = false;
+
         if (!electricalSweepStarted)
             electricalSweepStarted = true;
 
         electricalSweepTimer = electricalSweepResetTime;
-
         electricalSubFireExtinguished[subIndex] = true;
         electricalSweepSequence.Add(subIndex);
-
-        if (subFire != null)
-            subFire.SetActive(false);
 
         Debug.Log($"[Challenge] Electrical sub-fire extinguished: {subIndex}. Sequence: {string.Join(",", electricalSweepSequence)}");
 
@@ -448,28 +470,57 @@ public class FireChallengeManager : MonoBehaviour
         if (electricalSubFireExtinguished == null || electricalSubFireExtinguished.Length != 3)
             electricalSubFireExtinguished = new bool[3];
 
-        for (int i = 0; i < electricalSubFireExtinguished.Length; i++)
+        if (electricalSubFireExtinguishing == null || electricalSubFireExtinguishing.Length != 3)
+            electricalSubFireExtinguishing = new bool[3];
+
+        for (int i = 0; i < 3; i++)
+        {
             electricalSubFireExtinguished[i] = false;
+            electricalSubFireExtinguishing[i] = false;
+        }
 
         if (electricalSweepFires != null)
         {
             for (int i = 0; i < electricalSweepFires.Length; i++)
             {
-                if (electricalSweepFires[i] != null)
-                    electricalSweepFires[i].SetActive(!hideObjects);
+                if (electricalSweepFires[i] == null)
+                    continue;
+
+                ElectricalSubFire sub = electricalSweepFires[i].GetComponent<ElectricalSubFire>();
+                if (sub != null)
+                {
+                    sub.subFireIndex = i;
+                    sub.manager = this;
+                    sub.ResetSubFire();
+                }
+
+                electricalSweepFires[i].SetActive(!hideObjects);
             }
         }
     }
 
     void ShowElectricalSweepFires()
     {
+        if (fires != null && electricalFireIndex >= 0 && electricalFireIndex < fires.Length && fires[electricalFireIndex] != null)
+            fires[electricalFireIndex].SetActive(true);
+
         if (electricalSweepFires == null) return;
 
         for (int i = 0; i < electricalSweepFires.Length; i++)
         {
-            if (electricalSweepFires[i] != null && !electricalSubFireExtinguished[i])
+            if (electricalSweepFires[i] != null && !electricalSubFireExtinguished[i] && !electricalSubFireExtinguishing[i])
             {
-                electricalSweepFires[i].SetActive(true);
+                ElectricalSubFire sub = electricalSweepFires[i].GetComponent<ElectricalSubFire>();
+                if (sub != null)
+                {
+                    sub.subFireIndex = i;
+                    sub.manager = this;
+                    sub.ResetSubFire();
+                }
+                else
+                {
+                    electricalSweepFires[i].SetActive(true);
+                }
 
                 var particles = electricalSweepFires[i].GetComponentsInChildren<ParticleSystem>(true);
                 foreach (var ps in particles)
@@ -525,6 +576,10 @@ public class FireChallengeManager : MonoBehaviour
 
         return -1;
     }
+
+    // =========================================================
+    // CLASS C BURST
+    // =========================================================
 
     void StartBurstBlockPhase(Vector3 spawnPosition)
     {
@@ -600,6 +655,10 @@ public class FireChallengeManager : MonoBehaviour
         CheckForWinOrContinue();
     }
 
+    // =========================================================
+    // CLASS F BREACH
+    // =========================================================
+
     public void ExecuteBreach()
     {
         Debug.Log($"[Challenge] ExecuteBreach called | running={running}, waitingForClassFBreach={waitingForClassFBreach}, classFDoorBreached={classFDoorBreached}, CurrentFireIndex={CurrentFireIndex}");
@@ -674,6 +733,10 @@ public class FireChallengeManager : MonoBehaviour
 
         revealFireRoutine = null;
     }
+
+    // =========================================================
+    // GENERAL FLOW
+    // =========================================================
 
     void CheckForWinOrContinue()
     {

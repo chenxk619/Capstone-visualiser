@@ -35,7 +35,8 @@ public class TrackedFireTarget : MonoBehaviour
     void OnTargetStatusChanged(ObserverBehaviour behaviour, TargetStatus status)
     {
         // Use only TRACKED so fire disappears immediately when QR is lost
-        bool tracked = status.Status == Status.TRACKED;
+        bool tracked = status.Status == Status.TRACKED ||
+        status.Status == Status.EXTENDED_TRACKED;
 
         if (fireObject != null)
         {

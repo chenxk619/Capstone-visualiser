@@ -87,6 +87,9 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     private bool hitNow = false;
     private bool extinguished = false;
 
+    // For electrical mini-fire tracking
+    private ElectricalSubFire currentElectricalTarget = null;
+
     void Start()
     {
         if (!spray) spray = GetComponent<ParticleSystem>();
@@ -170,7 +173,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         pressedNow = IsPressed() && isPinPulled;
 
         if (!pressedNow)
+        {
             UpdateRangeUI("");
+            timer = 0f;
+            currentElectricalTarget = null;
+        }
 
         if (enableFuel && fuel <= 0f)
         {
@@ -238,6 +245,38 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 {
                     if (IsCorrectExtinguisherForCurrentFire())
                     {
+                        ElectricalSubFire electricalSubFire = hit.collider.GetComponentInParent<ElectricalSubFire>();
+
+                        // Special electrical mini-fire logic
+                        if (electricalSubFire != null &&
+                            challengeManager != null &&
+                            challengeManager.CurrentFireIndex == challengeManager.electricalFireIndex)
+                        {
+                            hitNow = true;
+                            UpdateRangeUI("In Range");
+
+                            if (currentElectricalTarget != electricalSubFire)
+                            {
+                                currentElectricalTarget = electricalSubFire;
+                                timer = 0f;
+                            }
+
+                            timer += Time.deltaTime;
+
+                            if (timer >= extinguishTime)
+                            {
+                                timer = 0f;
+                                bool started = challengeManager.TryStartElectricalSubFireExtinguish(electricalSubFire.gameObject);
+                                if (started)
+                                {
+                                    currentElectricalTarget = null;
+                                }
+                            }
+
+                            return;
+                        }
+
+                        // Normal fire logic
                         hitNow = true;
                         UpdateRangeUI("In Range");
                     }
@@ -245,6 +284,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                     {
                         hitNow = false;
                         timer = 0f;
+                        currentElectricalTarget = null;
                         UpdateRangeUI(wrongTypeText);
 
                         if (showWrongTypeLogs)
@@ -257,6 +297,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 {
                     hitNow = false;
                     timer = 0f;
+                    currentElectricalTarget = null;
                     UpdateRangeUI("Out of Range");
                 }
             }
@@ -264,6 +305,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             {
                 hitNow = false;
                 timer = 0f;
+                currentElectricalTarget = null;
                 UpdateRangeUI("Missed");
 
                 if (showDebug)
@@ -273,10 +315,16 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         if (hitNow)
         {
-            timer += Time.deltaTime;
+            // For normal fires only
+            if (!(currentElectricalTarget != null &&
+                  challengeManager != null &&
+                  challengeManager.CurrentFireIndex == challengeManager.electricalFireIndex))
+            {
+                timer += Time.deltaTime;
 
-            if (timer >= extinguishTime)
-                Extinguish();
+                if (timer >= extinguishTime)
+                    Extinguish();
+            }
         }
         else
         {
@@ -323,6 +371,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         timer = 0f;
         hitNow = false;
         pressedNow = false;
+        currentElectricalTarget = null;
 
         GameObject extinguishedFire = fireRoot;
 
@@ -376,6 +425,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         extinguished = false;
         hitNow = false;
         pressedNow = false;
+        currentElectricalTarget = null;
 
         fuel = maxFuel;
         isPinPulled = false;
@@ -417,6 +467,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     {
         pressedNow = false;
         commsSprayHeld = false;
+        currentElectricalTarget = null;
 
         if (spray && (spray.isPlaying || spray.isEmitting))
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -440,6 +491,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         pressedNow = false;
         commsSprayHeld = false;
         isPinPulled = false;
+        currentElectricalTarget = null;
 
         if (refillFuel)
         {

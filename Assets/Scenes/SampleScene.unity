@@ -577,11 +577,11 @@ MonoBehaviour:
   - {fileID: 641087173}
   - {fileID: 1721445016}
   - {fileID: 841670011}
-  - {fileID: 1829145809}
+  - {fileID: 1653815265}
   - {fileID: 100993277}
   electricalFireIndex: 3
   electricalSweepFires:
-  - {fileID: 1781949194303238870, guid: 4e35892e4c5444340a0e2189311808e5, type: 3}
+  - {fileID: 1829145809}
   - {fileID: 965253571}
   - {fileID: 1104786210}
   electricalSweepResetTime: 4
@@ -3080,6 +3080,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 965253572}
+    - targetCorrespondingSourceObject: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 965253576}
   m_SourcePrefab: {fileID: 100100000, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
 --- !u!4 &965253570 stripped
 Transform:
@@ -3112,6 +3115,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &965253576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 965253571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 834d9505a7c8e48dc95599e4dd972440, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
+  activeScale: {x: 0.5, y: 0.5, z: 0.5}
+  extinguishDuration: 1
 --- !u!1 &994225155
 GameObject:
   m_ObjectHideFlags: 0
@@ -8516,6 +8533,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1104786211}
+    - targetCorrespondingSourceObject: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1104786215}
   m_SourcePrefab: {fileID: 100100000, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
 --- !u!4 &1104786209 stripped
 Transform:
@@ -8548,6 +8568,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1104786215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104786210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 834d9505a7c8e48dc95599e4dd972440, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
+  activeScale: {x: 0.5, y: 0.5, z: 0.5}
+  extinguishDuration: 1
 --- !u!1 &1113588293
 GameObject:
   m_ObjectHideFlags: 0
@@ -20960,6 +20994,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1829145810}
+    - targetCorrespondingSourceObject: {fileID: 1255053967005034563, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1829145814}
   m_SourcePrefab: {fileID: 100100000, guid: 7e8d30e7be9957c43862563919b4cbcf, type: 3}
 --- !u!4 &1829145808 stripped
 Transform:
@@ -20992,6 +21029,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1829145814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1829145809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 834d9505a7c8e48dc95599e4dd972440, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
+  activeScale: {x: 1, y: 1, z: 1}
+  extinguishDuration: 1
 --- !u!1 &1834393329
 GameObject:
   m_ObjectHideFlags: 0

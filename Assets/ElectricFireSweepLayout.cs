@@ -6,8 +6,8 @@ public class ElectricalFireSweepLayout : MonoBehaviour
     public GameObject[] smallFires = new GameObject[3];
 
     [Header("Layout")]
-    public float scaleMultiplier = 0.5f;   // half size
-    public float spacing = 0.35f;          // distance between centers
+    public float scaleMultiplier = 0.5f;
+    public float spacing = 0.35f;
 
     [Header("Optional vertical offset")]
     public float yOffset = 0f;
@@ -37,17 +37,15 @@ public class ElectricalFireSweepLayout : MonoBehaviour
 
             Transform t = smallFires[i].transform;
 
-            // make each fire half the original size
             t.localScale = Vector3.one * scaleMultiplier;
 
-            // arrange side by side: left, middle, right
             float x = 0f;
 
             if (smallFires.Length == 3)
             {
                 if (i == 0) x = -spacing;
                 else if (i == 1) x = 0f;
-                else if (i == 2) x = spacing;
+                else x = spacing;
             }
             else
             {
@@ -56,6 +54,13 @@ public class ElectricalFireSweepLayout : MonoBehaviour
             }
 
             t.localPosition = new Vector3(x, yOffset, zOffset);
+
+            ElectricalSubFire subFire = smallFires[i].GetComponent<ElectricalSubFire>();
+            if (subFire != null)
+            {
+                // force refresh of stored visible scale in editor/runtime
+                // by disabling and re-enabling scale memory via SendMessage alternative not needed
+            }
         }
     }
 }
