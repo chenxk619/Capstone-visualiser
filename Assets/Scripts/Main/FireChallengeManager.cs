@@ -8,6 +8,10 @@ public class FireChallengeManager : MonoBehaviour
     public int firesToWin = 5;
     public float timeLimitSeconds = 600f;
 
+    [Header("Cheat")]
+    public bool cheatMode = false;
+    public float cheatTimeSeconds = 99999f;
+
     [Header("Fire Groups (order: A, B, C, Electrical, F)")]
     public FireGroupController[] fireGroups;
 
@@ -101,24 +105,32 @@ public class FireChallengeManager : MonoBehaviour
             return;
         }
 
-        timeLeft -= Time.deltaTime;
-        if (timeLeft <= 0f)
+        if (!cheatMode)
         {
-            timeLeft = 0f;
-            running = false;
-            waitingForBurstBlock = false;
-            waitingForClassFBreach = false;
+            timeLeft -= Time.deltaTime;
 
-            HideAllFires();
-            HideFireBurst();
-            HideBreachDoor();
-            UpdateTimerUI();
+            if (timeLeft <= 0f)
+            {
+                timeLeft = 0f;
+                running = false;
+                waitingForBurstBlock = false;
+                waitingForClassFBreach = false;
 
-            if (uiManager != null)
-                uiManager.ShowLose();
+                HideAllFires();
+                HideFireBurst();
+                HideBreachDoor();
+                UpdateTimerUI();
 
-            Debug.Log("[Challenge] Time up. Lose.");
-            return;
+                if (uiManager != null)
+                    uiManager.ShowLose();
+
+                Debug.Log("[Challenge] Time up. Lose.");
+                return;
+            }
+        }
+        else
+        {
+            timeLeft = cheatTimeSeconds;
         }
 
         UpdateTimerUI();
@@ -138,6 +150,7 @@ public class FireChallengeManager : MonoBehaviour
 
     public void StartChallenge()
     {
+        cheatMode = false;
         ResetChallenge();
         running = true;
 
@@ -148,10 +161,24 @@ public class FireChallengeManager : MonoBehaviour
         Debug.Log("[Challenge] Started. Waiting for scanned fire target.");
     }
 
+    public void StartCheatMode()
+    {
+        cheatMode = true;
+        ResetChallenge();
+        running = true;
+        timeLeft = cheatTimeSeconds;
+
+        UpdateTimerUI();
+        UpdateFireExtinguishedUI();
+        UpdateFireNameUI("CHEAT MODE");
+
+        Debug.Log("[Challenge] Cheat mode started. Waiting for scanned fire target.");
+    }
+
     void ResetChallenge()
     {
         extinguishedCount = 0;
-        timeLeft = timeLimitSeconds;
+        timeLeft = cheatMode ? cheatTimeSeconds : timeLimitSeconds;
         running = false;
 
         waitingForBurstBlock = false;
@@ -390,6 +417,17 @@ public class FireChallengeManager : MonoBehaviour
 
         if (burstTimer <= 0f || distToCamera <= burstStopDistance)
         {
+            if (cheatMode)
+            {
+                waitingForBurstBlock = false;
+                HideFireBurst();
+                UpdateFireNameUI("CHEAT MODE");
+
+                Debug.Log("[Challenge] Cheat mode ON - burst ignored.");
+                CheckForWinOrContinue();
+                return;
+            }
+
             waitingForBurstBlock = false;
             HideFireBurst();
             running = false;
@@ -558,9 +596,9 @@ public class FireChallengeManager : MonoBehaviour
         int mm = secs / 60;
         int ss = secs % 60;
 
-        timerBar.highValue = timeLimitSeconds;
+        timerBar.highValue = cheatMode ? cheatTimeSeconds : timeLimitSeconds;
         timerBar.value = TimeLeft;
-        timerBar.title = $"Timer: {mm:00}:{ss:00}";
+        timerBar.title = cheatMode ? "Timer: ∞" : $"Timer: {mm:00}:{ss:00}";
     }
 
     void UpdateFireExtinguishedUI()

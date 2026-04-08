@@ -1,14 +1,5 @@
-/**
-
- * GameUIManager.cs
- * 
- * Manages the UI panels for win/lose/start states.
- * Also handles the "Try Again" button to restart the game or challenge.
- *
-
-**/
-
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameUIManager : MonoBehaviour
 {
@@ -19,16 +10,43 @@ public class GameUIManager : MonoBehaviour
 
     [Header("Gameplay")]
     public ExtinguisherModelSwitcher extinguisherSwitcher;
-
     public FireChallengeManager challengeManager;
-
     public UITutorialManager tutorialManager;
+
+    [Header("UI Toolkit")]
+    public UIDocument uiDocument;
+    public string cheatButtonName = "cheatButton";
+
+    private Button cheatButton;
 
     void Start()
     {
         if (winPanel) winPanel.SetActive(false);
-        if (losePanel) losePanel.SetActive(false);   // NEW
+        if (losePanel) losePanel.SetActive(false);
         if (startPanel) startPanel.SetActive(true);
+
+        SetupCheatButton();
+    }
+
+    void SetupCheatButton()
+    {
+        if (uiDocument == null)
+        {
+            Debug.LogWarning("[GameUIManager] No UIDocument assigned for cheat button.");
+            return;
+        }
+
+        var root = uiDocument.rootVisualElement;
+        cheatButton = root.Q<Button>(cheatButtonName);
+
+        if (cheatButton == null)
+        {
+            Debug.LogWarning($"[GameUIManager] Button '{cheatButtonName}' not found.");
+            return;
+        }
+
+        cheatButton.clicked -= StartCheatGame;
+        cheatButton.clicked += StartCheatGame;
     }
 
     public void ShowWin()
@@ -39,6 +57,12 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowLose()
     {
+        if (challengeManager != null && challengeManager.cheatMode)
+        {
+            Debug.Log("[GameUIManager] Cheat mode ON - lose screen blocked.");
+            return;
+        }
+
         if (winPanel) winPanel.SetActive(false);
         if (losePanel) losePanel.SetActive(true);
     }
@@ -53,18 +77,17 @@ public class GameUIManager : MonoBehaviour
         return losePanel != null && losePanel.activeInHierarchy;
     }
 
-    // This is the button callback for "Try Again" / "Restart"
     public void Restart()
     {
-        Debug.Log("RESTART CLICKED");
+        Debug.Log("[GameUIManager] RESTART CLICKED");
 
         if (winPanel) winPanel.SetActive(false);
-        if (losePanel) losePanel.SetActive(false);   // NEW
+        if (losePanel) losePanel.SetActive(false);
         if (startPanel) startPanel.SetActive(false);
 
-        // If you are using the 5-in-30s challenge, restart the challenge
-        if (challengeManager)
+        if (challengeManager != null)
         {
+            challengeManager.cheatMode = false;
             challengeManager.StartChallenge();
             return;
         }
@@ -81,6 +104,23 @@ public class GameUIManager : MonoBehaviour
         {
             Debug.LogWarning("[GameUIManager] No active extinguisher script found.");
         }
+    }
+
+    public void StartCheatGame()
+    {
+        Debug.Log("[GameUIManager] START CHEAT MODE CLICKED");
+
+        if (winPanel) winPanel.SetActive(false);
+        if (losePanel) losePanel.SetActive(false);
+        if (startPanel) startPanel.SetActive(false);
+
+        if (challengeManager != null)
+        {
+            challengeManager.StartCheatMode();
+            return;
+        }
+
+        Debug.LogWarning("[GameUIManager] No FireChallengeManager assigned.");
     }
 
     public void StartTutorial()
