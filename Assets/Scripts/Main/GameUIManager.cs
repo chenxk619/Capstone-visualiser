@@ -3,17 +3,17 @@ using UnityEngine.UIElements;
 
 public class GameUIManager : MonoBehaviour
 {
-    [Header("UI")]
+    [Header("Panels")]
     public GameObject winPanel;
     public GameObject startPanel;
     public GameObject losePanel;
 
-    [Header("Gameplay")]
+    [Header("Gameplay References")]
     public ExtinguisherModelSwitcher extinguisherSwitcher;
     public FireChallengeManager challengeManager;
     public UITutorialManager tutorialManager;
 
-    [Header("UI Toolkit")]
+    [Header("UI Document")]
     public UIDocument uiDocument;
 
     [Header("Button Names")]
@@ -42,8 +42,8 @@ public class GameUIManager : MonoBehaviour
         CacheButtons();
         SetupCheatButton();
 
-        // Start panel / menu state
-        SetManualGameplayButtonsVisible(true);
+        // Start menu state: manual buttons available
+        SetButtonsForManualMode();
     }
 
     void CacheButtons()
@@ -68,15 +68,20 @@ public class GameUIManager : MonoBehaviour
         togglePressureButton = root.Q<Button>(togglePressureButtonName);
         prevExtinguisherButton = root.Q<Button>(prevExtinguisherButtonName);
         nextExtinguisherButton = root.Q<Button>(nextExtinguisherButtonName);
+
+        if (cheatButton == null) Debug.LogWarning($"[GameUIManager] Button '{cheatButtonName}' not found.");
+        if (blockButton == null) Debug.LogWarning($"[GameUIManager] Button '{blockButtonName}' not found.");
+        if (breachButton == null) Debug.LogWarning($"[GameUIManager] Button '{breachButtonName}' not found.");
+        if (pinButton == null) Debug.LogWarning($"[GameUIManager] Button '{pinButtonName}' not found.");
+        if (togglePressureButton == null) Debug.LogWarning($"[GameUIManager] Button '{togglePressureButtonName}' not found.");
+        if (prevExtinguisherButton == null) Debug.LogWarning($"[GameUIManager] Button '{prevExtinguisherButtonName}' not found.");
+        if (nextExtinguisherButton == null) Debug.LogWarning($"[GameUIManager] Button '{nextExtinguisherButtonName}' not found.");
     }
 
     void SetupCheatButton()
     {
         if (cheatButton == null)
-        {
-            Debug.LogWarning($"[GameUIManager] Button '{cheatButtonName}' not found.");
             return;
-        }
 
         cheatButton.clicked -= StartCheatGame;
         cheatButton.clicked += StartCheatGame;
@@ -88,16 +93,52 @@ public class GameUIManager : MonoBehaviour
         btn.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
-    public void SetManualGameplayButtonsVisible(bool visible)
+    void SetButtonEnabled(Button btn, bool enabled)
     {
-        SetButtonVisible(blockButton, visible);
-        SetButtonVisible(breachButton, visible);
-        SetButtonVisible(pinButton, visible);
-        SetButtonVisible(togglePressureButton, visible);
-        SetButtonVisible(prevExtinguisherButton, visible);
-        SetButtonVisible(nextExtinguisherButton, visible);
+        if (btn == null) return;
+        btn.SetEnabled(enabled);
+        btn.style.opacity = enabled ? 1f : 0.5f;
+    }
 
-        Debug.Log($"[GameUIManager] Manual gameplay buttons visible = {visible}");
+    public void SetButtonsForNormalGameplay()
+    {
+        // Hidden entirely in hardware/comms-only gameplay
+        SetButtonVisible(blockButton, false);
+        SetButtonVisible(breachButton, false);
+        SetButtonVisible(prevExtinguisherButton, false);
+        SetButtonVisible(nextExtinguisherButton, false);
+
+        // Shown but disabled
+        SetButtonVisible(pinButton, true);
+        SetButtonEnabled(pinButton, false);
+
+        SetButtonVisible(togglePressureButton, true);
+        SetButtonEnabled(togglePressureButton, false);
+
+        Debug.Log("[GameUIManager] Normal gameplay UI applied.");
+    }
+
+    public void SetButtonsForManualMode()
+    {
+        SetButtonVisible(blockButton, true);
+        SetButtonEnabled(blockButton, true);
+
+        SetButtonVisible(breachButton, true);
+        SetButtonEnabled(breachButton, true);
+
+        SetButtonVisible(pinButton, true);
+        SetButtonEnabled(pinButton, true);
+
+        SetButtonVisible(togglePressureButton, true);
+        SetButtonEnabled(togglePressureButton, true);
+
+        SetButtonVisible(prevExtinguisherButton, true);
+        SetButtonEnabled(prevExtinguisherButton, true);
+
+        SetButtonVisible(nextExtinguisherButton, true);
+        SetButtonEnabled(nextExtinguisherButton, true);
+
+        Debug.Log("[GameUIManager] Manual mode UI applied.");
     }
 
     public void ShowWin()
@@ -137,8 +178,7 @@ public class GameUIManager : MonoBehaviour
         if (losePanel) losePanel.SetActive(false);
         if (startPanel) startPanel.SetActive(false);
 
-        // Hide manual buttons in real gameplay mode
-        SetManualGameplayButtonsVisible(false);
+        SetButtonsForNormalGameplay();
 
         if (challengeManager != null)
         {
@@ -161,7 +201,7 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    // Cheat mode = manual UI buttons allowed
+    // Cheat mode = manual controls allowed
     public void StartCheatGame()
     {
         Debug.Log("[GameUIManager] START CHEAT MODE CLICKED");
@@ -170,8 +210,7 @@ public class GameUIManager : MonoBehaviour
         if (losePanel) losePanel.SetActive(false);
         if (startPanel) startPanel.SetActive(false);
 
-        // Show manual buttons in cheat mode
-        SetManualGameplayButtonsVisible(true);
+        SetButtonsForManualMode();
 
         if (challengeManager != null)
         {
@@ -182,7 +221,7 @@ public class GameUIManager : MonoBehaviour
         Debug.LogWarning("[GameUIManager] No FireChallengeManager assigned.");
     }
 
-    // Tutorial = manual UI buttons allowed
+    // Tutorial = manual controls allowed
     public void StartTutorial()
     {
         Debug.Log("[GameUIManager] START TUTORIAL CLICKED");
@@ -191,7 +230,7 @@ public class GameUIManager : MonoBehaviour
         if (losePanel) losePanel.SetActive(false);
         if (startPanel) startPanel.SetActive(false);
 
-        SetManualGameplayButtonsVisible(true);
+        SetButtonsForManualMode();
 
         if (tutorialManager != null)
         {
@@ -209,7 +248,6 @@ public class GameUIManager : MonoBehaviour
         if (losePanel) losePanel.SetActive(false);
         if (startPanel) startPanel.SetActive(true);
 
-        // Menu state: visible
-        SetManualGameplayButtonsVisible(true);
+        SetButtonsForManualMode();
     }
 }

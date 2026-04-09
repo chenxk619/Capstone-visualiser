@@ -430,6 +430,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 0
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1001 &105467806
 PrefabInstance:
@@ -791,6 +792,12 @@ MonoBehaviour:
   tutorialManager: {fileID: 1523471378}
   uiDocument: {fileID: 1729673543}
   cheatButtonName: cheatButton
+  blockButtonName: BlockButton
+  breachButtonName: BreachButton
+  pinButtonName: PinButton
+  togglePressureButtonName: togglePressureButton
+  prevExtinguisherButtonName: PrevExtinguisherButton
+  nextExtinguisherButtonName: NextExtinguisherButton
 --- !u!1 &230449997
 GameObject:
   m_ObjectHideFlags: 0
@@ -990,7 +997,6 @@ MonoBehaviour:
   - {fileID: 2010379134}
   - {fileID: 1674901106}
   resetTimeIfPaused: 4
-  allowBothDirections: 1
   challengeManager: {fileID: 123780600}
 --- !u!114 &276340988
 MonoBehaviour:
@@ -1435,7 +1441,6 @@ MonoBehaviour:
   - {fileID: 1723018732}
   - {fileID: 1609193764}
   resetTimeIfPaused: 4
-  allowBothDirections: 1
   challengeManager: {fileID: 123780600}
 --- !u!114 &412215911
 MonoBehaviour:
@@ -2265,6 +2270,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 0
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1 &642837755
 GameObject:
@@ -2874,6 +2880,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 0
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!4 &842141119 stripped
 Transform:
@@ -3119,6 +3126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
   miniIndex: 2
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!65 &890156169
 BoxCollider:
@@ -3190,7 +3198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
+  StatusFilter: 1
   UsePoseSmoothing: 0
   AnimationCurve:
     serializedVersion: 2
@@ -3591,6 +3599,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
   miniIndex: 1
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1 &994225155
 GameObject:
@@ -3646,10 +3655,10 @@ MonoBehaviour:
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 2050697848}
+  rayStartOffset: 0.05
   fireLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  extinguishTime: 1
   normalExtinguishDistance: 2
   pressureExtinguishDistance: 4
   showDebug: 1
@@ -8545,7 +8554,6 @@ MonoBehaviour:
   - {fileID: 1537258671}
   - {fileID: 890156168}
   resetTimeIfPaused: 4
-  allowBothDirections: 1
   challengeManager: {fileID: 123780600}
 --- !u!1 &1070020254
 GameObject:
@@ -8927,6 +8935,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 2
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!65 &1073199198
 BoxCollider:
@@ -9383,6 +9392,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
   miniIndex: 2
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1 &1113588293
 GameObject:
@@ -9731,10 +9741,10 @@ MonoBehaviour:
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1508365864}
+  rayStartOffset: 0.05
   fireLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  extinguishTime: 1
   normalExtinguishDistance: 2
   pressureExtinguishDistance: 4
   showDebug: 1
@@ -14604,7 +14614,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
+  StatusFilter: 1
   UsePoseSmoothing: 0
   AnimationCurve:
     serializedVersion: 2
@@ -14882,7 +14892,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
+  StatusFilter: 1
   UsePoseSmoothing: 0
   AnimationCurve:
     serializedVersion: 2
@@ -15140,7 +15150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
+  StatusFilter: 1
   UsePoseSmoothing: 0
   AnimationCurve:
     serializedVersion: 2
@@ -15513,6 +15523,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 1
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!65 &1452919484
 BoxCollider:
@@ -16251,6 +16262,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
   miniIndex: 1
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!65 &1537258672
 BoxCollider:
@@ -16460,10 +16472,10 @@ MonoBehaviour:
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1479046123}
+  rayStartOffset: 0.05
   fireLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  extinguishTime: 1
   normalExtinguishDistance: 2
   pressureExtinguishDistance: 4
   showDebug: 1
@@ -21516,6 +21528,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 2
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!65 &1609193765
 BoxCollider:
@@ -21612,7 +21625,6 @@ MonoBehaviour:
   - {fileID: 965253576}
   - {fileID: 1104786215}
   resetTimeIfPaused: 4
-  allowBothDirections: 1
   challengeManager: {fileID: 123780600}
 --- !u!1001 &1674901102
 PrefabInstance:
@@ -21846,6 +21858,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 2
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1 &1677294059
 GameObject:
@@ -21901,7 +21914,6 @@ MonoBehaviour:
   - {fileID: 1452919483}
   - {fileID: 1073199197}
   resetTimeIfPaused: 4
-  allowBothDirections: 1
   challengeManager: {fileID: 0}
 --- !u!114 &1677294062
 MonoBehaviour:
@@ -22320,6 +22332,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
   miniIndex: 0
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1001 &1723018729
 PrefabInstance:
@@ -22552,6 +22565,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 1
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!65 &1723018733
 BoxCollider:
@@ -23489,6 +23503,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElectricalSubFire
   miniIndex: 0
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1 &1834393329
 GameObject:
@@ -23800,6 +23815,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MiniFireUnit
   miniIndex: 1
   extinguishDuration: 1
+  minimumScaleMultiplier: 0.5
   groupController: {fileID: 0}
 --- !u!1 &2046898010
 GameObject:
@@ -23849,7 +23865,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
+  StatusFilter: 1
   UsePoseSmoothing: 0
   AnimationCurve:
     serializedVersion: 2
@@ -24021,7 +24037,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 886328de6a5c14cbb85854fdf1a5085b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: VuforiaScripts::DefaultObserverEventHandler
-  StatusFilter: 0
+  StatusFilter: 1
   UsePoseSmoothing: 0
   AnimationCurve:
     serializedVersion: 2
@@ -24305,10 +24321,10 @@ MonoBehaviour:
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1834393330}
+  rayStartOffset: 0.05
   fireLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  extinguishTime: 1
   normalExtinguishDistance: 2
   pressureExtinguishDistance: 4
   showDebug: 1

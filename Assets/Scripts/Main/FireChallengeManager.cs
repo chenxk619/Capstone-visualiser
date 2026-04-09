@@ -6,7 +6,7 @@ public class FireChallengeManager : MonoBehaviour
 {
     [Header("Challenge Rules")]
     public int firesToWin = 5;
-    public float timeLimitSeconds = 600f;
+    public float timeLimitSeconds = 60f;
 
     [Header("Cheat")]
     public bool cheatMode = false;
@@ -80,12 +80,6 @@ public class FireChallengeManager : MonoBehaviour
                 timerBar.lowValue = 0f;
                 timerBar.highValue = timeLimitSeconds;
             }
-
-            if (fireExtinguishedLabel == null)
-                Debug.LogWarning($"[FireChallengeManager] Label '{fireExtinguishedLabelName}' not found.");
-
-            if (fireNameLabel == null)
-                Debug.LogWarning($"[FireChallengeManager] Label '{fireNameLabelName}' not found.");
         }
 
         BindGroups();
@@ -294,9 +288,12 @@ public class FireChallengeManager : MonoBehaviour
         Debug.Log($"[Challenge] Lost tracking for fire index {fireIndex}");
     }
 
-    public bool TryStartMiniFireExtinguish(MiniFireUnit miniFire)
+    public bool TrySprayMiniFire(MiniFireUnit miniFire, float sprayAmount)
     {
         if (!running || miniFire == null)
+            return false;
+
+        if (waitingForBurstBlock)
             return false;
 
         if (CurrentFireIndex < 0 || CurrentFireIndex >= fireGroups.Length)
@@ -309,7 +306,7 @@ public class FireChallengeManager : MonoBehaviour
         if (group == null)
             return false;
 
-        return group.TryStartMiniFire(miniFire);
+        return group.TrySprayMiniFire(miniFire, sprayAmount);
     }
 
     public void OnFireGroupCompleted(int fireIndex, GameObject fireGroupObject)
@@ -415,14 +412,13 @@ public class FireChallengeManager : MonoBehaviour
 
         float distToCamera = Vector3.Distance(fireBurstObject.transform.position, burstTargetCamera.position);
 
-        if (burstTimer <= 0f)
+        if (distToCamera <= burstStopDistance || burstTimer <= 0f)
         {
             if (cheatMode)
             {
                 waitingForBurstBlock = false;
                 HideFireBurst();
                 UpdateFireNameUI("CHEAT MODE");
-
                 Debug.Log("[Challenge] Cheat mode ON - burst ignored.");
                 CheckForWinOrContinue();
                 return;

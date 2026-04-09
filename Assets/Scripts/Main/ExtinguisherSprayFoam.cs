@@ -19,15 +19,17 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     [Header("Pressure Mode")]
     public bool isPressureMode = false;
 
-    [Header("Ray Source (AR Camera only)")]
+    [Header("Ray Source")]
     public Camera arCamera;
 
     [Header("Ray Origin (Extinguisher Nozzle)")]
     public Transform rayOrigin;
 
+    [Header("Raycast Close-Range Fix")]
+    public float rayStartOffset = 0.05f;
+
     [Header("Fire Target")]
     public LayerMask fireLayerMask;
-    public float extinguishTime = 1f;
 
     [Header("Extinguish Distance")]
     public float normalExtinguishDistance = 2f;
@@ -50,7 +52,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Fuel")]
     public bool enableFuel = true;
-    public float maxFuel = 60f;
+    public float maxFuel = 30f;
     public float fuelUsePerSecond = 1f;
     public bool clearParticlesOnEmpty = true;
 
@@ -75,7 +77,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     private float fuel;
     private ProgressBar fuelBar;
 
-    private float timer = 0f;
     private bool pressedNow = false;
     private bool hitNow = false;
 
@@ -134,15 +135,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             fuelBar.lowValue = 0f;
             fuelBar.highValue = maxFuel;
         }
-
-        if (pinButton == null)
-            Debug.LogWarning($"[Extinguisher] Button '{pinButtonName}' not found.");
-
-        if (fuelBar == null)
-            Debug.LogWarning($"[Extinguisher] ProgressBar named '{fuelBarName}' not found.");
-
-        if (rangeLabel == null)
-            Debug.LogWarning($"[Extinguisher] Label named '{rangeLabelName}' not found.");
     }
 
     void BindPinButton()
@@ -161,6 +153,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         pinButton.clicked -= TogglePin;
         uiBound = false;
+    }
+
+    bool HasInfiniteFuel()
+    {
+        return challengeManager != null && challengeManager.cheatMode;
     }
 
     void Update()
@@ -192,11 +189,10 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         if (!pressedNow)
         {
             UpdateRangeUI("");
-            timer = 0f;
             currentMiniTarget = null;
         }
 
-        if (enableFuel && fuel <= 0f)
+        if (enableFuel && !HasInfiniteFuel() && fuel <= 0f)
         {
             pressedNow = false;
             ForceStopSpray();
@@ -219,27 +215,34 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             }
         }
 
-        if (enableFuel && pressedNow)
+        if (enableFuel)
         {
-            fuel -= fuelUsePerSecond * Time.deltaTime;
-
-            if (fuel <= 0f)
+            if (HasInfiniteFuel())
             {
-                fuel = 0f;
+                fuel = maxFuel;
+            }
+            else if (pressedNow)
+            {
+                fuel -= fuelUsePerSecond * Time.deltaTime;
 
-                if (spray && (spray.isPlaying || spray.isEmitting))
+                if (fuel <= 0f)
                 {
-                    var mode = clearParticlesOnEmpty
-                        ? ParticleSystemStopBehavior.StopEmittingAndClear
-                        : ParticleSystemStopBehavior.StopEmitting;
+                    fuel = 0f;
 
-                    spray.Stop(true, mode);
+                    if (spray && (spray.isPlaying || spray.isEmitting))
+                    {
+                        var mode = clearParticlesOnEmpty
+                            ? ParticleSystemStopBehavior.StopEmittingAndClear
+                            : ParticleSystemStopBehavior.StopEmitting;
+
+                        spray.Stop(true, mode);
+                    }
+
+                    pressedNow = false;
+                    UpdateFuelUI();
+                    UpdateRangeUI("");
+                    return;
                 }
-
-                pressedNow = false;
-                UpdateFuelUI();
-                UpdateRangeUI("");
-                return;
             }
         }
 
@@ -266,18 +269,15 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                         if (miniFire != null)
                         {
                             hitNow = true;
+                            currentMiniTarget = miniFire;
                             UpdateRangeUI("In Range");
 
-                            if (currentMiniTarget != miniFire)
-                            {
-                                currentMiniTarget = miniFire;
-                                timer = 0f;
-                            }
+                            if (challengeManager != null)
+                                challengeManager.TrySprayMiniFire(currentMiniTarget, Time.deltaTime);
                         }
                         else
                         {
                             hitNow = false;
-                            timer = 0f;
                             currentMiniTarget = null;
                             UpdateRangeUI("Missed");
                         }
@@ -285,7 +285,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                     else
                     {
                         hitNow = false;
-                        timer = 0f;
                         currentMiniTarget = null;
                         UpdateRangeUI(wrongTypeText);
 
@@ -298,7 +297,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 else
                 {
                     hitNow = false;
-                    timer = 0f;
                     currentMiniTarget = null;
                     UpdateRangeUI("Out of Range");
                 }
@@ -306,7 +304,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             else
             {
                 hitNow = false;
-                timer = 0f;
                 currentMiniTarget = null;
                 UpdateRangeUI("Missed");
 
@@ -314,37 +311,20 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                     Debug.Log($"[{gameObject.name}] Ray did not hit fire.");
             }
         }
-
-        if (hitNow && currentMiniTarget != null)
-        {
-            timer += Time.deltaTime;
-
-            if (timer >= extinguishTime)
-            {
-                timer = 0f;
-
-                if (challengeManager != null)
-                    challengeManager.TryStartMiniFireExtinguish(currentMiniTarget);
-
-                currentMiniTarget = null;
-            }
-        }
-        else
-        {
-            if (!pressedNow)
-                timer = 0f;
-        }
     }
 
     bool RayHitsFire(out RaycastHit hit)
     {
         hit = default;
 
-        if (rayOrigin == null || arCamera == null)
+        if (rayOrigin == null)
             return false;
 
-        Vector3 start = rayOrigin.position;
-        Vector3 dir = arCamera.transform.forward;
+        Vector3 dir = rayOrigin.forward;
+        Vector3 start = rayOrigin.position + dir * rayStartOffset;
+
+        if (showDebug)
+            Debug.DrawRay(start, dir * sprayRange, Color.red);
 
         return Physics.Raycast(
             start,
@@ -371,7 +351,6 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     public void ResetGame()
     {
-        timer = 0f;
         hitNow = false;
         pressedNow = false;
         currentMiniTarget = null;
@@ -392,14 +371,10 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     public void ResetForNextFire(GameObject newFireRoot, bool refillFuel)
     {
-        timer = 0f;
         hitNow = false;
         pressedNow = false;
         commsSprayHeld = false;
         currentMiniTarget = null;
-
-        // Keep this extinguisher's own pin state
-        // DO NOT reset isPinPulled here
 
         if (refillFuel)
         {
@@ -419,7 +394,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     void UpdateFuelUI()
     {
         if (fuelBar != null)
+        {
+            fuelBar.highValue = maxFuel;
             fuelBar.value = fuel;
+            fuelBar.title = HasInfiniteFuel() ? "Fuel: ∞" : "";
+        }
     }
 
     void UpdateRangeUI(string text)

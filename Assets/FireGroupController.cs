@@ -1,29 +1,24 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class FireGroupController : MonoBehaviour
 {
     [Header("Fire Info")]
     public int fireIndex = -1;
 
-    [Header("Mini Fires in Left -> Middle -> Right order")]
+    [Header("Mini Fires in any order")]
     public MiniFireUnit[] miniFires = new MiniFireUnit[3];
 
-    [Header("Sweep Rule")]
-    public float resetTimeIfPaused = 4f;
-
-    [Tooltip("Allowed sweep paths are Left->Middle->Right or Right->Middle->Left")]
-    public bool allowBothDirections = true;
+    [Header("Reset Rule")]
+    public float resetTimeIfPaused = 10f;
 
     [Header("References")]
     public FireChallengeManager challengeManager;
 
-    private List<int> extinguishedSequence = new List<int>();
     private bool[] extinguishedFlags = new bool[3];
-    private bool[] extinguishingFlags = new bool[3];
     private float sweepTimer = 0f;
-    private bool startedSweep = false;
+    private bool startedAny = false;
     private bool completed = false;
+    private int extinguishedCount = 0;
 
     void Awake()
     {
@@ -32,13 +27,13 @@ public class FireGroupController : MonoBehaviour
 
     void Update()
     {
-        if (!startedSweep || completed)
+        if (!startedAny || completed)
             return;
 
         sweepTimer -= Time.deltaTime;
         if (sweepTimer <= 0f)
         {
-            Debug.Log($"[FireGroupController] Sweep timed out for fireIndex {fireIndex}. Resetting.");
+            Debug.Log($"[FireGroupController] Reset timeout for fireIndex {fireIndex}. Resetting mini fires.");
             ResetSweep(false);
         }
     }
@@ -66,8 +61,8 @@ public class FireGroupController : MonoBehaviour
 
         for (int i = 0; i < miniFires.Length; i++)
         {
-            if (miniFires[i] != null && !extinguishedFlags[i] && !extinguishingFlags[i])
-                miniFires[i].ResetMiniFire();
+            if (miniFires[i] != null && !extinguishedFlags[i])
+                miniFires[i].ShowMiniFire();
         }
     }
 
@@ -79,21 +74,15 @@ public class FireGroupController : MonoBehaviour
     public void FullReset(bool hideGroup)
     {
         completed = false;
-        startedSweep = false;
+        startedAny = false;
         sweepTimer = 0f;
-        extinguishedSequence.Clear();
+        extinguishedCount = 0;
 
         if (extinguishedFlags == null || extinguishedFlags.Length != 3)
             extinguishedFlags = new bool[3];
 
-        if (extinguishingFlags == null || extinguishingFlags.Length != 3)
-            extinguishingFlags = new bool[3];
-
         for (int i = 0; i < 3; i++)
-        {
             extinguishedFlags[i] = false;
-            extinguishingFlags[i] = false;
-        }
 
         BindMiniFires();
 
@@ -106,13 +95,10 @@ public class FireGroupController : MonoBehaviour
             }
         }
 
-        if (hideGroup)
-            gameObject.SetActive(false);
-        else
-            gameObject.SetActive(true);
+        gameObject.SetActive(!hideGroup);
     }
 
-    public bool TryStartMiniFire(MiniFireUnit mini)
+    public bool TrySprayMiniFire(MiniFireUnit mini, float sprayAmount)
     {
         if (mini == null || completed)
             return false;
@@ -121,13 +107,15 @@ public class FireGroupController : MonoBehaviour
         if (idx < 0 || idx >= 3)
             return false;
 
-        if (extinguishedFlags[idx] || extinguishingFlags[idx])
+        if (extinguishedFlags[idx])
             return false;
 
-        extinguishingFlags[idx] = true;
-        mini.StartShrinkAndExtinguish();
+        if (!startedAny)
+            startedAny = true;
 
-        Debug.Log($"[FireGroupController] Start mini fire extinguish: fireIndex={fireIndex}, miniIndex={idx}");
+        sweepTimer = resetTimeIfPaused;
+        mini.AddSprayProgress(sprayAmount);
+
         return true;
     }
 
@@ -140,25 +128,20 @@ public class FireGroupController : MonoBehaviour
         if (idx < 0 || idx >= 3)
             return;
 
-        extinguishingFlags[idx] = false;
-        extinguishedFlags[idx] = true;
+        if (extinguishedFlags[idx])
+            return;
 
-        if (!startedSweep)
-            startedSweep = true;
+        extinguishedFlags[idx] = true;
+        extinguishedCount++;
+
+        if (!startedAny)
+            startedAny = true;
 
         sweepTimer = resetTimeIfPaused;
-        extinguishedSequence.Add(idx);
 
-        Debug.Log($"[FireGroupController] Mini fire complete: fireIndex={fireIndex}, sequence={string.Join(",", extinguishedSequence)}");
+        Debug.Log($"[FireGroupController] Mini fire complete: fireIndex={fireIndex}, miniIndex={idx}, count={extinguishedCount}/3");
 
-        if (!IsValidSweepSoFar())
-        {
-            Debug.Log($"[FireGroupController] Invalid sweep for fireIndex {fireIndex}. Resetting.");
-            ResetSweep(false);
-            return;
-        }
-
-        if (extinguishedSequence.Count >= 3)
+        if (extinguishedCount >= 3)
         {
             completed = true;
             Debug.Log($"[FireGroupController] Fire group completed: fireIndex={fireIndex}");
@@ -168,45 +151,14 @@ public class FireGroupController : MonoBehaviour
         }
     }
 
-    bool IsValidSweepSoFar()
-    {
-        if (extinguishedSequence.Count == 0)
-            return true;
-
-        if (allowBothDirections)
-        {
-            return MatchesPrefix(extinguishedSequence, new int[] { 0, 1, 2 }) ||
-                   MatchesPrefix(extinguishedSequence, new int[] { 2, 1, 0 });
-        }
-
-        return MatchesPrefix(extinguishedSequence, new int[] { 0, 1, 2 });
-    }
-
-    bool MatchesPrefix(List<int> actual, int[] target)
-    {
-        if (actual.Count > target.Length)
-            return false;
-
-        for (int i = 0; i < actual.Count; i++)
-        {
-            if (actual[i] != target[i])
-                return false;
-        }
-
-        return true;
-    }
-
     void ResetSweep(bool hideGroup)
     {
-        startedSweep = false;
+        startedAny = false;
         sweepTimer = 0f;
-        extinguishedSequence.Clear();
+        extinguishedCount = 0;
 
         for (int i = 0; i < 3; i++)
-        {
             extinguishedFlags[i] = false;
-            extinguishingFlags[i] = false;
-        }
 
         for (int i = 0; i < miniFires.Length; i++)
         {
