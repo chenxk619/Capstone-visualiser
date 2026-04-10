@@ -31,8 +31,6 @@ public class PressureToggleUIController : MonoBehaviour
 
         togglePressureButton.clicked += TogglePressureMode;
 
-        RefreshButtonText();
-
         Debug.Log("[PressureToggleUIController] Pressure toggle button linked successfully.");
     }
 
@@ -47,29 +45,7 @@ public class PressureToggleUIController : MonoBehaviour
         bool newMode = !extinguisher.IsPressureMode();
         extinguisher.SetPressureMode(newMode);
 
-        RefreshButtonText();
-
         Debug.Log($"[PressureToggleUIController] Pressure mode toggled to {newMode}");
     }
 
-    void RefreshButtonText()
-    {
-        if (togglePressureButton == null)
-            return;
-
-        if (extinguisher == null)
-        {
-            togglePressureButton.text = "Pressure: ?";
-            return;
-        }
-
-        togglePressureButton.text = extinguisher.IsPressureMode()
-            ? "Pressure: ON"
-            : "Pressure: OFF";
-    }
-
-    public void RefreshUI()
-    {
-        RefreshButtonText();
-    }
 }

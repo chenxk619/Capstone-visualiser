@@ -1647,7 +1647,6 @@ Transform:
   - {fileID: 302774433}
   - {fileID: 837000814}
   - {fileID: 960177663}
-  - {fileID: 1089698162}
   - {fileID: 1523471376}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3652,6 +3651,7 @@ MonoBehaviour:
   sprayRange: 20
   normalStartLifetime: 0.1
   pressureStartLifetime: 0.3
+  pressureButtonName: togglePressureButton
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 2050697848}
@@ -9085,53 +9085,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &1089698161
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1089698162}
-  - component: {fileID: 1089698163}
-  m_Layer: 0
-  m_Name: PressureManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1089698162
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089698161}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.21811, y: 0, z: -1.5844799}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 499742651}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1089698163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089698161}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9a1077a469a94b1f8c51becf232a03d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  uiDocument: {fileID: 1729673543}
-  togglePressureButtonName: togglePressureButton
-  extinguisher: {fileID: 1173171848}
 --- !u!1001 &1104786208
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9738,6 +9691,7 @@ MonoBehaviour:
   sprayRange: 20
   normalStartLifetime: 0.1
   pressureStartLifetime: 0.3
+  pressureButtonName: togglePressureButton
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1508365864}
@@ -16469,6 +16423,7 @@ MonoBehaviour:
   sprayRange: 20
   normalStartLifetime: 0.1
   pressureStartLifetime: 0.3
+  pressureButtonName: togglePressureButton
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1479046123}
@@ -24318,6 +24273,7 @@ MonoBehaviour:
   sprayRange: 20
   normalStartLifetime: 0.1
   pressureStartLifetime: 0.3
+  pressureButtonName: togglePressureButton
   isPressureMode: 0
   arCamera: {fileID: 648773780}
   rayOrigin: {fileID: 1834393330}

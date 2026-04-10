@@ -17,6 +17,8 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     public float pressureStartLifetime = 0.3f;
 
     [Header("Pressure Mode")]
+    public string pressureButtonName = "togglePressureButton";
+    private Button pressureToggleButton;
     public bool isPressureMode = false;
 
     [Header("Ray Source")]
@@ -81,7 +83,8 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     private bool hitNow = false;
 
     private MiniFireUnit currentMiniTarget = null;
-    private bool uiBound = false;
+    private bool pinUiBound = false;
+    private bool pressureUiBound = false;
 
     void Awake()
     {
@@ -95,13 +98,16 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         UpdateFuelUI();
         UpdateRangeUI("");
         RefreshPinButtonText();
+        RefreshPressureButtonText();
     }
 
     void OnEnable()
     {
         CacheUIReferences();
         BindPinButton();
+        BindPressureButton();
         RefreshPinButtonText();
+        RefreshPressureButtonText();
         UpdateFuelUI();
         UpdateRangeUI("");
     }
@@ -109,12 +115,14 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
     void OnDisable()
     {
         UnbindPinButton();
+        UnbindPressureButton();
         ForceStopSpray();
     }
 
     void OnDestroy()
     {
         UnbindPinButton();
+        UnbindPressureButton();
     }
 
     void CacheUIReferences()
@@ -127,6 +135,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             return;
 
         pinButton = root.Q<Button>(pinButtonName);
+        pressureToggleButton = root.Q<Button>(pressureButtonName);
         fuelBar = root.Q<ProgressBar>(fuelBarName);
         rangeLabel = root.Q<Label>(rangeLabelName);
 
@@ -139,20 +148,38 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     void BindPinButton()
     {
-        if (pinButton == null || uiBound)
+        if (pinButton == null || pinUiBound)
             return;
 
         pinButton.clicked += TogglePin;
-        uiBound = true;
+        pinUiBound = true;
     }
 
     void UnbindPinButton()
     {
-        if (pinButton == null || !uiBound)
+        if (pinButton == null || !pinUiBound)
             return;
 
         pinButton.clicked -= TogglePin;
-        uiBound = false;
+        pinUiBound = false;
+    }
+
+    void BindPressureButton()
+    {
+        if (pressureToggleButton == null || pressureUiBound)
+            return;
+
+        pressureToggleButton.clicked += TogglePressureMode;
+        pressureUiBound = true;
+    }
+
+    void UnbindPressureButton()
+    {
+        if (pressureToggleButton == null || !pressureUiBound)
+            return;
+
+        pressureToggleButton.clicked -= TogglePressureMode;
+        pressureUiBound = false;
     }
 
     bool HasInfiniteFuel()
@@ -263,6 +290,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
                     Debug.Log(
                         $"[{gameObject.name}] Ray hit: {hit.collider.name}" +
+                        $" | extinguisher={GetCurrentExtinguisherName()}" +
                         $" | hitDistance={hit.distance:F2}" +
                         $" | allowedDistance={currentExtinguishDistance:F2}" +
                         $" | sprayRange={sprayRange:F2}" +
@@ -294,7 +322,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
                             if (showDebug)
                             {
-                                Debug.Log($"[{gameObject.name}] Hit collider has no MiniFireUnit in parent. Collider = {hit.collider.name}");
+                                Debug.Log(
+                                    $"[{gameObject.name}] Hit collider has no MiniFireUnit in parent." +
+                                    $" | extinguisher={GetCurrentExtinguisherName()}" +
+                                    $" | collider={hit.collider.name}"
+                                );
                             }
 
                             UpdateRangeUI("Missed");
@@ -308,7 +340,11 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
                         if (showWrongTypeLogs && challengeManager != null)
                         {
-                            Debug.Log($"[{gameObject.name}] Wrong extinguisher type for current fire index {challengeManager.CurrentFireIndex}.");
+                            Debug.Log(
+                                $"[{gameObject.name}] Wrong extinguisher type." +
+                                $" | extinguisher={GetCurrentExtinguisherName()}" +
+                                $" | fireIndex={challengeManager.CurrentFireIndex}"
+                            );
                         }
                     }
                 }
@@ -321,6 +357,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                     {
                         Debug.Log(
                             $"[{gameObject.name}] OUT OF RANGE" +
+                            $" | extinguisher={GetCurrentExtinguisherName()}" +
                             $" | hit={hit.collider.name}" +
                             $" | hitDistance={hit.distance:F2}" +
                             $" | allowedDistance={currentExtinguishDistance:F2}" +
@@ -345,6 +382,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
                     Debug.Log(
                         $"[{gameObject.name}] Ray did not hit fire." +
+                        $" | extinguisher={GetCurrentExtinguisherName()}" +
                         $" | sprayRange={sprayRange:F2}" +
                         $" | pressureMode={isPressureMode}" +
                         $" | rayStart={start.ToString("F3")}" +
@@ -404,11 +442,23 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         UpdateFuelUI();
         UpdateRangeUI("");
         RefreshPinButtonText();
+        RefreshPressureButtonText();
 
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
         inputLockTimer = inputLockAfterRestart;
+
+        if (showDebug || showCommsLogs)
+        {
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name} reset game." +
+                $" | extinguisher={GetCurrentExtinguisherName()}" +
+                $" | pinPulled={isPinPulled}" +
+                $" | pressureMode={isPressureMode}" +
+                $" | fuel={fuel:F2}"
+            );
+        }
     }
 
     public void ResetForNextFire(GameObject newFireRoot, bool refillFuel)
@@ -425,12 +475,23 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         }
 
         UpdateRangeUI("");
+        RefreshPressureButtonText();
 
         if (spray)
             spray.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
         RefreshPinButtonText();
         inputLockTimer = inputLockAfterRestart;
+
+        if (showDebug || showCommsLogs)
+        {
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name} reset for next fire." +
+                $" | extinguisher={GetCurrentExtinguisherName()}" +
+                $" | refillFuel={refillFuel}" +
+                $" | fuel={fuel:F2}"
+            );
+        }
     }
 
     void UpdateFuelUI()
@@ -451,6 +512,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             {
                 Debug.Log(
                     $"[RangeUI] {gameObject.name} | label missing" +
+                    $" | extinguisher={GetCurrentExtinguisherName()}" +
                     $" | requestedText='{text}'" +
                     $" | pressureMode={isPressureMode}" +
                     $" | currentExtinguishDistance={GetCurrentExtinguishDistance():F2}" +
@@ -479,6 +541,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
             Debug.Log(
                 $"[RangeUI] {gameObject.name}" +
+                $" | extinguisher={GetCurrentExtinguisherName()}" +
                 $" | UI='{text}'" +
                 $" | pressureMode={isPressureMode}" +
                 $" | currentExtinguishDistance={GetCurrentExtinguishDistance():F2}" +
@@ -518,7 +581,17 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         RefreshPinButtonText();
 
         if (showDebug || showCommsLogs)
-            Debug.Log($"[Extinguisher] {gameObject.name} pin pulled = {isPinPulled}");
+        {
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name} pin pulled = {isPinPulled}" +
+                $" | extinguisher={GetCurrentExtinguisherName()}"
+            );
+        }
+    }
+
+    void TogglePressureMode()
+    {
+        SetPressureMode(!isPressureMode);
     }
 
     void RefreshPinButtonText()
@@ -529,13 +602,27 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         pinButton.text = isPinPulled ? "Pin: OFF" : "Pin: ON";
     }
 
+    void RefreshPressureButtonText()
+    {
+        if (pressureToggleButton == null)
+            return;
+
+        Debug.Log($"[DEBUG] called spray - status {isPressureMode}");
+        pressureToggleButton.text = isPressureMode ? "Pressure: ON" : "Pressure: OFF";
+    }
+
     public void PullPinFromComms()
     {
         isPinPulled = true;
         RefreshPinButtonText();
 
         if (showCommsLogs)
-            Debug.Log($"[Extinguisher] {gameObject.name} pin pulled by comms.");
+        {
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name} pin pulled by comms." +
+                $" | extinguisher={GetCurrentExtinguisherName()}"
+            );
+        }
     }
 
     public void InsertPinFromComms()
@@ -545,7 +632,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         RefreshPinButtonText();
 
         if (showCommsLogs)
-            Debug.Log($"[Extinguisher] {gameObject.name} pin inserted by comms.");
+        {
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name} pin inserted by comms." +
+                $" | extinguisher={GetCurrentExtinguisherName()}"
+            );
+        }
     }
 
     public void SetCommsSprayHeld(bool held)
@@ -553,17 +645,30 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
         commsSprayHeld = held;
 
         if (showCommsLogs)
-            Debug.Log($"[Extinguisher] {gameObject.name} comms spray held = {held}");
+        {
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name} comms spray held = {held}" +
+                $" | extinguisher={GetCurrentExtinguisherName()}"
+            );
+        }
     }
+
+    //USE THIS
 
     public void SetPressureMode(bool enabled)
     {
         isPressureMode = enabled;
         ApplySprayModeSettings();
+        RefreshPressureButtonText();
 
         if (showDebug || showCommsLogs)
         {
-            Debug.Log($"[Extinguisher] {gameObject.name} pressure mode set to {enabled}. Distance = {GetCurrentExtinguishDistance():F2}");
+            Debug.Log(
+                $"[Extinguisher] {gameObject.name}" +
+                $" | extinguisher={GetCurrentExtinguisherName()}" +
+                $" | pressure mode set to {enabled}" +
+                $" | distance={GetCurrentExtinguishDistance():F2}"
+            );
         }
     }
 
@@ -593,5 +698,31 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
         var main = spray.main;
         main.startLifetime = GetCurrentStartLifetime();
+    }
+
+    string GetCurrentExtinguisherName()
+    {
+        if (extinguisherSwitcher == null)
+            return "Unknown";
+
+        int index = extinguisherSwitcher.GetCurrentExtinguisherIndex();
+
+        if (extinguisherSwitcher.extinguisherNames != null &&
+            index >= 0 &&
+            index < extinguisherSwitcher.extinguisherNames.Length &&
+            !string.IsNullOrWhiteSpace(extinguisherSwitcher.extinguisherNames[index]))
+        {
+            return extinguisherSwitcher.extinguisherNames[index];
+        }
+
+        switch (index)
+        {
+            case 0: return "Foam";
+            case 1: return "Water";
+            case 2: return "Powder";
+            case 3: return "Carbon Dioxide";
+            case 4: return "Wet Chemical";
+            default: return $"Unknown({index})";
+        }
     }
 }
