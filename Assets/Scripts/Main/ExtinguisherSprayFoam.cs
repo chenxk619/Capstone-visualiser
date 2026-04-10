@@ -257,7 +257,19 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
                 if (showDebug)
                 {
-                    Debug.Log($"[{gameObject.name}] Ray hit: {hit.collider.name}, distance: {hit.distance:F2}, limit: {currentExtinguishDistance:F2}");
+                    Vector3 start = rayOrigin != null
+                        ? rayOrigin.position + rayOrigin.forward * rayStartOffset
+                        : Vector3.zero;
+
+                    Debug.Log(
+                        $"[{gameObject.name}] Ray hit: {hit.collider.name}" +
+                        $" | hitDistance={hit.distance:F2}" +
+                        $" | allowedDistance={currentExtinguishDistance:F2}" +
+                        $" | sprayRange={sprayRange:F2}" +
+                        $" | pressureMode={isPressureMode}" +
+                        $" | rayStart={start.ToString("F3")}" +
+                        $" | rayDir={(rayOrigin != null ? rayOrigin.forward.ToString("F3") : "null")}"
+                    );
                 }
 
                 if (hit.distance <= currentExtinguishDistance)
@@ -279,6 +291,12 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                         {
                             hitNow = false;
                             currentMiniTarget = null;
+
+                            if (showDebug)
+                            {
+                                Debug.Log($"[{gameObject.name}] Hit collider has no MiniFireUnit in parent. Collider = {hit.collider.name}");
+                            }
+
                             UpdateRangeUI("Missed");
                         }
                     }
@@ -298,6 +316,18 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 {
                     hitNow = false;
                     currentMiniTarget = null;
+
+                    if (showDebug)
+                    {
+                        Debug.Log(
+                            $"[{gameObject.name}] OUT OF RANGE" +
+                            $" | hit={hit.collider.name}" +
+                            $" | hitDistance={hit.distance:F2}" +
+                            $" | allowedDistance={currentExtinguishDistance:F2}" +
+                            $" | pressureMode={isPressureMode}"
+                        );
+                    }
+
                     UpdateRangeUI("Out of Range");
                 }
             }
@@ -308,7 +338,19 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
                 UpdateRangeUI("Missed");
 
                 if (showDebug)
-                    Debug.Log($"[{gameObject.name}] Ray did not hit fire.");
+                {
+                    Vector3 start = rayOrigin != null
+                        ? rayOrigin.position + rayOrigin.forward * rayStartOffset
+                        : Vector3.zero;
+
+                    Debug.Log(
+                        $"[{gameObject.name}] Ray did not hit fire." +
+                        $" | sprayRange={sprayRange:F2}" +
+                        $" | pressureMode={isPressureMode}" +
+                        $" | rayStart={start.ToString("F3")}" +
+                        $" | rayDir={(rayOrigin != null ? rayOrigin.forward.ToString("F3") : "null")}"
+                    );
+                }
             }
         }
     }
@@ -403,7 +445,23 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     void UpdateRangeUI(string text)
     {
-        if (rangeLabel == null) return;
+        if (rangeLabel == null)
+        {
+            if (showDebug)
+            {
+                Debug.Log(
+                    $"[RangeUI] {gameObject.name} | label missing" +
+                    $" | requestedText='{text}'" +
+                    $" | pressureMode={isPressureMode}" +
+                    $" | currentExtinguishDistance={GetCurrentExtinguishDistance():F2}" +
+                    $" | sprayRange={sprayRange:F2}" +
+                    $" | pinPulled={isPinPulled}" +
+                    $" | pressedNow={pressedNow}" +
+                    $" | commsSprayHeld={commsSprayHeld}"
+                );
+            }
+            return;
+        }
 
         rangeLabel.text = text;
 
@@ -413,6 +471,25 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
             rangeLabel.style.color = new StyleColor(Color.red);
         else
             rangeLabel.style.color = new StyleColor(Color.white);
+
+        if (showDebug)
+        {
+            string rayOriginPos = rayOrigin != null ? rayOrigin.position.ToString("F3") : "null";
+            string rayForward = rayOrigin != null ? rayOrigin.forward.ToString("F3") : "null";
+
+            Debug.Log(
+                $"[RangeUI] {gameObject.name}" +
+                $" | UI='{text}'" +
+                $" | pressureMode={isPressureMode}" +
+                $" | currentExtinguishDistance={GetCurrentExtinguishDistance():F2}" +
+                $" | sprayRange={sprayRange:F2}" +
+                $" | pinPulled={isPinPulled}" +
+                $" | pressedNow={pressedNow}" +
+                $" | commsSprayHeld={commsSprayHeld}" +
+                $" | rayOrigin={rayOriginPos}" +
+                $" | rayForward={rayForward}"
+            );
+        }
     }
 
     void ForceStopSpray()

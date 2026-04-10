@@ -591,7 +591,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireChallengeManager
   firesToWin: 5
-  timeLimitSeconds: 60
+  timeLimitSeconds: 120
   cheatMode: 0
   cheatTimeSeconds: 99999
   fireGroups:
@@ -603,7 +603,7 @@ MonoBehaviour:
   burstFireIndex: 2
   fireBurstObject: {fileID: 642837755}
   burstTargetCamera: {fileID: 648773781}
-  burstBlockTimeLimit: 14
+  burstBlockTimeLimit: 10
   burstStopDistance: 0.5
   breachFireIndex: 4
   breachDoorObject: {fileID: 1429461391}
@@ -1144,7 +1144,7 @@ MonoBehaviour:
   comms: {fileID: 1266802029}
   fireChallengeManager: {fileID: 123780600}
   riotShieldController: {fileID: 837000815}
-  syncWindowSeconds: 3
+  syncWindowSeconds: 5
   verboseLogs: 1
   logIgnoredInputs: 1
   logTimeouts: 1
