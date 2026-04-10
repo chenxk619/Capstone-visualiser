@@ -11,7 +11,7 @@ public class SyncedCommandManager : MonoBehaviour
     public RiotShieldController riotShieldController;
 
     [Header("Sync Settings")]
-    public float syncWindowSeconds = 5f;
+    public float syncWindowSeconds = 8f;
 
     [Header("Debug")]
     public bool verboseLogs = true;
