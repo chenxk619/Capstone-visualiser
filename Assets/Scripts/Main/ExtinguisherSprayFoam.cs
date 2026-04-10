@@ -33,7 +33,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Extinguish Distance")]
     public float normalExtinguishDistance = 2f;
-    public float pressureExtinguishDistance = 4f;
+    public float pressureExtinguishDistance = 8f;
 
     [Header("Debug Overlay")]
     public bool showDebug = true;
@@ -52,7 +52,7 @@ public class ExtinguisherExtinguish_CameraRay : MonoBehaviour
 
     [Header("Fuel")]
     public bool enableFuel = true;
-    public float maxFuel = 30f;
+    public float maxFuel = 60f;
     public float fuelUsePerSecond = 1f;
     public bool clearParticlesOnEmpty = true;
 
